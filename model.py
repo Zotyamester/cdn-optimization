@@ -99,6 +99,33 @@ class Track:
         return str(self)
 
 
+def display_network_links(network):
+    print("Links:")
+    for link, (latency, cost) in sorted(network.links.items(), key=lambda kv: kv[1].latency):
+        print(f" * {' <-> '.join(link)}:\t\t{latency:.2f} ms\t\t{cost:.2f}")
+    print()
+
+
+def display_track_stats(nodes, tracks):
+    print("Tracks:")
+    for name, streams in tracks:
+        print(f"\t{name}:")
+
+        for stream_id, (delay_budget, node_reliabilities) in streams:
+            print(f"\t{stream_id}: {delay_budget} ms")
+
+            for node in nodes.keys():
+                print(f"\t\t\t{node}: {node_reliabilities[node]}", end="")
+
+                if node_reliabilities[node] < 0:
+                    print(" (pub)")
+                elif node_reliabilities[node] > 0:
+                    print(" (sub)")
+                else:
+                    print("")
+        print()
+
+
 # Sample usage
 if __name__ == "__main__":
     nodes = {
@@ -114,28 +141,11 @@ if __name__ == "__main__":
 
     network = Network(nodes)
 
-    print("Links:")
-    for link, (latency, cost) in sorted(network.links.items(), key=lambda kv: kv[1].latency):
-        print(f" * {' <-> '.join(link)}:\t\t{latency:.2f} ms\t\t{cost:.2f}")
+    display_network_links(network)
 
     tracks = [
         Track("Gajdos Összes Rövidítve", "eu-central-1", [("Budapest", 95)]),
         Track("Szirmay - A halálosztó", "eu-south-1", [("Budapest", 50)]),
     ]
 
-    for name, streams in tracks:
-        print(f"{name}:")
-
-        for stream_id, (delay_budget, node_reliabilities) in streams:
-            print(f"\t{stream_id}: {delay_budget} ms")
-
-            for node in nodes.keys():
-                print(f"\t\t{node}: {node_reliabilities[node]}", end="")
-
-                if node_reliabilities[node] < 0:
-                    print("\t <- publisher")
-                elif node_reliabilities[node] > 0:
-                    print("\t <- subscriber")
-                else:
-                    print("")
-        print()
+    display_track_stats(nodes, tracks)
