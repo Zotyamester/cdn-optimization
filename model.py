@@ -78,7 +78,7 @@ class Track:
     def recreate_streams(self):
         self.streams = {}
         for i, (subscriber, delay_budget) in enumerate(self._subscribers, start=1):
-            stream_id = f"stream{i}"
+            stream_id = f"f{i}"
             self.streams[stream_id] = Stream(
                 delay_budget,
                 defaultdict(lambda: 0, {
@@ -99,20 +99,20 @@ class Track:
         return str(self)
 
 
-def display_network_links(network):
+def display_network_links(network: Network):
     print("Links:")
     for link, (latency, cost) in sorted(network.links.items(), key=lambda kv: kv[1].latency):
         print(f" * {' <-> '.join(link)}:\t\t{latency:.2f} ms\t\t{cost:.2f}")
     print()
 
 
-def display_track_stats(nodes, tracks):
+def display_track_stats(nodes: dict[str, Node], tracks: dict[str, Track]):
     print("Tracks:")
-    for name, streams in tracks:
-        print(f"\t{name}:")
+    for track_id, (name, streams) in tracks.items():
+        print(f"\t{track_id} ({name}):")
 
         for stream_id, (delay_budget, node_reliabilities) in streams:
-            print(f"\t{stream_id}: {delay_budget} ms")
+            print(f"\t\t{stream_id}: {delay_budget} ms")
 
             for node in nodes.keys():
                 print(f"\t\t\t{node}: {node_reliabilities[node]}", end="")
@@ -126,7 +126,6 @@ def display_track_stats(nodes, tracks):
         print()
 
 
-# Sample usage
 if __name__ == "__main__":
     nodes = {
         "eu-west-1":    Node((53.3498, -6.2603), 1.08),     # Dublin, IE
@@ -136,16 +135,34 @@ if __name__ == "__main__":
         "eu-north-1":   Node((59.3293, 18.0686), 0.094),    # Stockholm, SE
         "eu-south-1":   Node((45.4642, 9.1900), 1.08),      # Milan, IT
         "Aalborg":      Node((57.0169, 9.9891), 0.15),      # Aalborg, DK
-        "Budapest":     Node((47.4732, 19.0379), 0.0029)    # Budapest, HU
+        "Budapest":     Node((47.4732, 19.0379), 0.0029),   # Budapest, HU
     }
 
     network = Network(nodes)
 
     display_network_links(network)
 
-    tracks = [
-        Track("Gajdos Összes Rövidítve", "eu-central-1", [("Budapest", 95)]),
-        Track("Szirmay - A halálosztó", "eu-south-1", [("Budapest", 50)]),
-    ]
+    tracks = {
+        "t1": Track(
+            name="Gajdos Összes Rövidítve",
+            publisher="eu-central-1",
+            subscribers=[
+                ("Budapest", 95),
+                ("Aalborg", 5),
+                ("eu-north-1", 16),
+                ("eu-south-1", 10),
+            ]
+        ),
+        "t2": Track(
+            name="Szirmay - A halálosztó",
+            publisher="eu-south-1",
+            subscribers=[
+                ("Budapest", 50),
+                ("Budapest", 30),
+                ("Aalborg", 10),
+                ("eu-north-1", 70),
+            ]
+        ),
+    }
 
     display_track_stats(nodes, tracks)
