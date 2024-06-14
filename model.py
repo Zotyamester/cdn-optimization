@@ -69,8 +69,9 @@ class Stream:
 
 
 class Track:
-    def __init__(self, name: str, publisher: str, subscribers: list[tuple[str, float]]):
+    def __init__(self, name: str, publisher: str, subscribers: list[tuple[str, float]], color: str = "red"):
         self.name = name
+        self.color = color  # TODO: The color should not be stored in the model
         self._publisher = publisher
         self._subscribers = subscribers
         self.recreate_streams()
@@ -78,7 +79,7 @@ class Track:
     def recreate_streams(self):
         self.streams = {}
         for i, (subscriber, delay_budget) in enumerate(self._subscribers, start=1):
-            stream_id = f"stream{i}"
+            stream_id = f"f{i}"
             self.streams[stream_id] = Stream(
                 delay_budget,
                 defaultdict(lambda: 0, {
@@ -108,11 +109,11 @@ def display_network_links(network):
 
 def display_track_stats(nodes, tracks):
     print("Tracks:")
-    for name, streams in tracks:
-        print(f"\t{name}:")
+    for track_id, (name, streams) in tracks.items():
+        print(f"\t{track_id} ({name}):")
 
         for stream_id, (delay_budget, node_reliabilities) in streams:
-            print(f"\t{stream_id}: {delay_budget} ms")
+            print(f"\t\t{stream_id}: {delay_budget} ms")
 
             for node in nodes.keys():
                 print(f"\t\t\t{node}: {node_reliabilities[node]}", end="")
@@ -136,16 +137,31 @@ if __name__ == "__main__":
         "eu-north-1":   Node((59.3293, 18.0686), 0.094),    # Stockholm, SE
         "eu-south-1":   Node((45.4642, 9.1900), 1.08),      # Milan, IT
         "Aalborg":      Node((57.0169, 9.9891), 0.15),      # Aalborg, DK
-        "Budapest":     Node((47.4732, 19.0379), 0.0029)    # Budapest, HU
+        "Budapest":     Node((47.4732, 19.0379), 0.0029),   # Budapest, HU
     }
 
     network = Network(nodes)
 
     display_network_links(network)
 
-    tracks = [
-        Track("Gajdos Összes Rövidítve", "eu-central-1", [("Budapest", 95)]),
-        Track("Szirmay - A halálosztó", "eu-south-1", [("Budapest", 50)]),
-    ]
+    tracks = {
+        "t1": Track(
+            name="Gajdos Összes Rövidítve",
+            publisher="eu-central-1",
+            subscribers=[
+                ("Budapest", 95),
+                ("Aalborg", 5),
+                ("eu-north-1", 16),
+                ("eu-south-1", 11),
+            ]
+        ),
+        "t2": Track(
+            name="Szirmay - A halálosztó",
+            publisher="eu-south-1",
+            subscribers=[
+                ("Budapest", 50),
+            ]
+        ),
+    }
 
     display_track_stats(nodes, tracks)
