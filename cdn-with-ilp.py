@@ -1,7 +1,8 @@
 from model import Network, Node, Track, display_network_links, display_track_stats
 from plot import get_plotter
-from solver import get_optimal_topology_for_a_single_track, get_optimal_topology_for_multiple_tracks
+from solver import get_multi_track_optimizer
 import pulp as lp
+import time
 
 # Sample network, track and plot configuration *******************************************************************
 
@@ -50,26 +51,22 @@ track_to_color = {
 
 # Optimize network ***********************************************************************************************
 
-used_links_per_track = {}
-for track_id, track in tracks.items():
-    print(f"Optimizing network for track {track_id}...")
-    status, used_links = get_optimal_topology_for_a_single_track(network, track, debug=True)
-    if status == lp.const.LpStatusOptimal:
-        print(f"Optimization successful for track {track_id}")
-        used_links_per_track[track_id] = used_links
-    else:
-        print(f"Optimization failed for track {track_id}")
-    print()
+multi_track_optimizer = get_multi_track_optimizer("single")  # or "multiple"
 
-# status, used_links_per_track = get_optimal_topology_for_multiple_tracks(
-#     network, tracks, debug=True)
-# if status == lp.const.LpStatusOptimal:
-#     print("Optimization successful.")
-# else:
-#     print("Optimization failed.")
+start_time = time.time()
+status, used_links_per_track = multi_track_optimizer(
+    network, tracks, debug=True)
+end_time = time.time()
+
+if status == lp.const.LpStatusOptimal:
+    print("Optimization successful.")
+else:
+    print("Optimization failed.")
+
+execution_time = end_time - start_time
+print("Execution time of the solver:", execution_time, "seconds")
 
 # Plot the network ***********************************************************************************************
 
-# plotter = get_plotter("simple")
-plotter = get_plotter("basemap")
+plotter = get_plotter("simple")  # or "basemap"
 plotter(network, tracks, track_to_color, used_links_per_track)

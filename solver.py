@@ -1,5 +1,5 @@
+from typing import Callable
 import pulp as lp
-
 from model import Network, Track
 
 
@@ -80,6 +80,15 @@ def get_optimal_topology_for_a_single_track(network: Network, track: Track, debu
                   if var.varValue > 0]
     return status, used_links
 
+def multi_to_single_track_adapter(network: Network, tracks: dict[str, Track], debug: bool = False) -> tuple[int, dict[str, list[tuple[str, str]]]]:
+    status = lp.const.LpStatusOptimal
+    used_links_per_track = {}
+    for track_id, track in tracks.items():
+        track_status, used_links = get_optimal_topology_for_a_single_track(network, track, debug=True)
+        used_links_per_track[track_id] = used_links
+        if track_status != lp.const.LpStatusOptimal:
+            status = track_status
+    return status, used_links_per_track
 
 def get_optimal_topology_for_multiple_tracks(network: Network, tracks: dict[str, Track], debug: bool = False) -> tuple[int, dict[str, list[tuple[str, str]]]]:
     prob = lp.LpProblem("MoQ_relay_topology_optimization", lp.LpMinimize)
@@ -168,3 +177,11 @@ def get_optimal_topology_for_multiple_tracks(network: Network, tracks: dict[str,
         used_links_per_track[track_id] = [
             link for link, var in link_usages[track_id].items() if var.varValue > 0]
     return status, used_links_per_track
+
+def get_multi_track_optimizer(type: str) -> Callable[[Network, dict[str, Track], bool], tuple[int, dict[str, list[tuple[str, str]]]]]:
+    if type == "single":
+        return multi_to_single_track_adapter
+    elif type == "multiple":
+        return get_optimal_topology_for_multiple_tracks
+    else:
+        raise ValueError("Invalid optimizer type.")
