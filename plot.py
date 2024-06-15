@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from model import Network, Track
 
 
-def plot_network(network: Network, tracks: dict[str, Track], used_links_per_track: dict[str, list[tuple[str, str]]]):
+def simple_plot_network(network: Network, tracks: dict[str, Track], track_to_color: dict[str, str], used_links_per_track: dict[str, list[tuple[str, str]]]):
     g = nx.DiGraph()
 
     for node, (location, cost_factor) in network.nodes.items():
@@ -20,7 +20,7 @@ def plot_network(network: Network, tracks: dict[str, Track], used_links_per_trac
 
     for track, used_links in used_links_per_track.items():
         nx.draw_networkx_edges(g, pos=node_positions,
-                               edgelist=used_links, edge_color=tracks[track].color, width=3, arrowsize=15, node_size=3800)
+                               edgelist=used_links, edge_color=track_to_color[track], width=3, arrowsize=15, node_size=3800)
 
     plt.axis("off")
     plt.show()
