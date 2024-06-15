@@ -1,5 +1,5 @@
 from model import Network, Node, Track, display_network_links, display_track_stats
-from plot import plot_network
+from plot import get_plotter, plot_network
 from solver import get_optimal_topology
 import pulp as lp
 
@@ -63,4 +63,5 @@ for track_id, track in tracks.items():
 
 # Plot the network ***********************************************************************************************
 
-plot_network(network, tracks, track_to_color, used_links_per_track)
+plotter = get_plotter("basemap")
+plotter(network, tracks, track_to_color, used_links_per_track)
