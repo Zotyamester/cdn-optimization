@@ -1,6 +1,6 @@
 from model import Network, Node, Track, display_network_links, display_track_stats
-from plot import get_plotter, plot_network
-from solver import get_optimal_topology
+from plot import get_plotter
+from solver import get_optimal_topology_for_a_single_track, get_optimal_topology_for_multiple_tracks
 import pulp as lp
 
 # Sample network, track and plot configuration *******************************************************************
@@ -13,7 +13,7 @@ nodes = {
     "eu-north-1":   Node((59.3293, 18.0686), 0.094),    # Stockholm, SE
     "eu-south-1":   Node((45.4642, 9.1900), 1.08),      # Milan, IT
     "Aalborg":      Node((57.0169, 9.9891), 0.15),      # Aalborg, DK
-    "Budapest":     Node((47.4732, 19.0379), 0.0029)    # Budapest, HU
+    "Budapest":     Node((47.4732, 19.0379), 0.0029),   # Budapest, HU
 }
 
 network = Network(nodes)
@@ -53,7 +53,7 @@ track_to_color = {
 used_links_per_track = {}
 for track_id, track in tracks.items():
     print(f"Optimizing network for track {track_id}...")
-    status, used_links = get_optimal_topology(network, track, debug=True)
+    status, used_links = get_optimal_topology_for_a_single_track(network, track, debug=True)
     if status == lp.const.LpStatusOptimal:
         print(f"Optimization successful for track {track_id}")
         used_links_per_track[track_id] = used_links
@@ -61,7 +61,15 @@ for track_id, track in tracks.items():
         print(f"Optimization failed for track {track_id}")
     print()
 
+# status, used_links_per_track = get_optimal_topology_for_multiple_tracks(
+#     network, tracks, debug=True)
+# if status == lp.const.LpStatusOptimal:
+#     print("Optimization successful.")
+# else:
+#     print("Optimization failed.")
+
 # Plot the network ***********************************************************************************************
 
+# plotter = get_plotter("simple")
 plotter = get_plotter("basemap")
 plotter(network, tracks, track_to_color, used_links_per_track)

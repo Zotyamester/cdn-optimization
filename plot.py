@@ -2,6 +2,30 @@ from typing import Callable
 from model import Network, Track
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
+import networkx as nx
+
+
+def simple_plot_network(network: Network, tracks: dict[str, Track], track_to_color: dict[str, str], used_links_per_track: dict[str, list[tuple[str, str]]]):
+    g = nx.DiGraph()
+
+    for node, (location, cost_factor) in network.nodes.items():
+        g.add_node(node, location=location, cost_factor=cost_factor)
+    for link, (latency, cost) in network.links.items():
+        g.add_edge(*link, latency=latency, cost=cost)
+
+    node_positions = {node_name: (node_attrs["location"][1], node_attrs["location"][0])
+                      for node_name, node_attrs in g.nodes.data()}
+
+    plt.figure(figsize=(16, 10))
+    nx.draw_networkx(g, pos=node_positions, node_size=4000,
+                     font_size=10, font_color="white", arrowstyle="-")
+
+    for track, used_links in used_links_per_track.items():
+        nx.draw_networkx_edges(g, pos=node_positions,
+                               edgelist=used_links, edge_color=track_to_color[track], width=3, arrowsize=15, node_size=3800)
+
+    plt.axis("off")
+    plt.show()
 
 
 def basemap_plot_network(network: Network, tracks: dict[str, Track], track_to_color: dict[str, str], used_links_per_track: dict[str, list[tuple[str, str]]]):
@@ -31,9 +55,10 @@ def basemap_plot_network(network: Network, tracks: dict[str, Track], track_to_co
         if link not in link_to_tracks:
             plt.plot([x1, x2], [y1, y2], color='gray', linewidth=1)
         else:
-            tracks = link_to_tracks[link]
-            dx, dy = (x2 - x1) / len(tracks), (y2 - y1) / len(tracks)
-            for i, track in enumerate(tracks):
+            tracks_on_link = link_to_tracks[link]
+            dx, dy = (x2 - x1) / len(tracks_on_link), (y2 - y1) / \
+                len(tracks_on_link)
+            for i, track in enumerate(tracks_on_link):
                 plt.plot([x1 + i * dx, x1 + (i + 1) * dx], [y1 + i * dy, y1 +
                          (i + 1) * dy], color=track_to_color[track], linewidth=3)
 
@@ -48,7 +73,9 @@ def basemap_plot_network(network: Network, tracks: dict[str, Track], track_to_co
 
 
 def get_plotter(type: str) -> Callable[[Network, dict[str, Track], dict[str, str], dict[str, list[tuple[str, str]]]], None]:
-    if type == "basemap":
+    if type == "simple":
+        return simple_plot_network
+    elif type == "basemap":
         return basemap_plot_network
     else:
         raise ValueError(f"Unknown plotter type: {type}")

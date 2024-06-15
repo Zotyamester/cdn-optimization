@@ -23,7 +23,6 @@ class Link:
 
 
 class Network:
-    # Calculate distance between every pair of cities and add a link
     LINK_PROPAGATION_SPEED = 200_000  # in km/s
 
     def __init__(self, nodes: dict[str, Node]):
@@ -32,6 +31,8 @@ class Network:
 
     def recreate_links(self):
         self.links = {}
+
+        # Calculate distance between every pair of cities and add a link in both directions
         for node1, node2 in itertools.combinations(self.nodes.keys(), 2):
             coords1 = self.nodes[node1].location
             coords2 = self.nodes[node2].location
@@ -139,7 +140,6 @@ if __name__ == "__main__":
     }
 
     network = Network(nodes)
-
     display_network_links(network)
 
     tracks = {
@@ -164,5 +164,4 @@ if __name__ == "__main__":
             ]
         ),
     }
-
     display_track_stats(nodes, tracks)
