@@ -29,14 +29,36 @@ def simple_plot_network(network: Network, tracks: dict[str, Track], track_to_col
 
 
 def basemap_plot_network(network: Network, tracks: dict[str, Track], track_to_color: dict[str, str], used_links_per_track: dict[str, list[tuple[str, str]]]):
-    m = Basemap(resolution='c', projection='merc', llcrnrlon=-
-                15, llcrnrlat=35, urcrnrlon=30, urcrnrlat=70)
+    min_lon = 90
+    max_lon = -90
+    min_lat = 180
+    max_lat = -180
 
-    plt.figure(figsize=(10, 12))
-    m.fillcontinents(color='lightgray', lake_color='white')
+    node_positions = {}
+    for node, (location, _) in network.nodes.items():
+        lon, lat = location[1], location[0]
+        node_positions[node] = (lon, lat)
 
-    node_positions = {node: (location[1], location[0])
-                      for node, (location, _) in network.nodes.items()}
+        if lon < min_lon:
+            min_lon = lon
+        elif lon > max_lon:
+            max_lon = lon
+
+        if lat < min_lat:
+            min_lat = lat
+        elif lat > max_lat:
+            max_lat = lat
+
+    min_lon = max(min_lon * 1.1, -180)
+    max_lon = min(max_lon * 1.1, 180)
+    min_lat = max(min_lat * 1.1, -90)
+    max_lat = min(max_lat * 1.1, 90)
+
+    m = Basemap(resolution="c", projection="merc",
+                llcrnrlon=min_lon, llcrnrlat=min_lat, urcrnrlon=max_lon, urcrnrlat=max_lat)
+
+    plt.figure(figsize=(16, 9))
+    m.fillcontinents(color="lightgray", lake_color="white")
 
     link_to_tracks = {}
     for track, used_links in used_links_per_track.items():
@@ -53,7 +75,7 @@ def basemap_plot_network(network: Network, tracks: dict[str, Track], track_to_co
         x2, y2 = m(lon2, lat2)
 
         if link not in link_to_tracks:
-            plt.plot([x1, x2], [y1, y2], color='gray', linewidth=1)
+            plt.plot([x1, x2], [y1, y2], color="gray", linewidth=0.1)
         else:
             tracks_on_link = link_to_tracks[link]
             dx, dy = (x2 - x1) / len(tracks_on_link), (y2 - y1) / \
@@ -65,9 +87,9 @@ def basemap_plot_network(network: Network, tracks: dict[str, Track], track_to_co
     # Plot nodes
     for node, (lon, lat) in node_positions.items():
         x, y = m(lon, lat)
-        m.plot(x, y, 'bo', markersize=10)
-        plt.text(x, y, node, fontsize=12, ha='right',
-                 va='bottom', color='black')
+        m.plot(x, y, "bo", markersize=10)
+        plt.text(x, y, node, fontsize=12, ha="right",
+                 va="bottom", color="black")
 
     plt.show()
 
