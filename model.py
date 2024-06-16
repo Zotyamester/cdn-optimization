@@ -1,3 +1,4 @@
+from typing import Callable
 import geopy.distance
 import itertools
 from dataclasses import dataclass
@@ -25,8 +26,12 @@ class Link:
 class Network:
     LINK_PROPAGATION_SPEED = 200_000  # in km/s
 
-    def __init__(self, nodes: dict[str, Node]):
+    def __init__(self,
+                 nodes: dict[str, Node],
+                 calculate_cost: Callable[[dict[str, Node], str, str], float] =
+                 lambda ns, n1, n2: (ns[n1].cost_factor + ns[n2].cost_factor) / 2):
         self.nodes = nodes
+        self.calculate_cost = calculate_cost
         self.recreate_links()
 
     def recreate_links(self):
@@ -41,14 +46,11 @@ class Network:
             latency_in_s = distance / Network.LINK_PROPAGATION_SPEED
             latency_in_ms = latency_in_s * 1000
 
-            cost_factor1 = self.nodes[node1].cost_factor
-            cost_factor2 = self.nodes[node2].cost_factor
-
-            link_usage_cost = (cost_factor1 + cost_factor2) / 2
+            link_usage_cost = self.calculate_cost(self.nodes, node1, node2)
 
             # Links are unidirectional, but there is a link in both ways with the same latency and usage cost
-            self.links[(node1, node2)] = self.links[(node2, node1)
-                                                    ] = Link(latency_in_ms, link_usage_cost)
+            link = Link(latency_in_ms, link_usage_cost)
+            self.links[(node1, node2)] = self.links[(node2, node1)] = link
 
     def __iter__(self):
         yield from (self.nodes.items(), self.links.items())
