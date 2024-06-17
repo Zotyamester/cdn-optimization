@@ -1,3 +1,4 @@
+import itertools
 from typing import Callable
 from model import Network, Track
 from mpl_toolkits.basemap import Basemap
@@ -68,21 +69,26 @@ def basemap_plot_network(network: Network, tracks: dict[str, Track], track_to_co
             link_to_tracks[link].append(track)
 
     # Plot links
-    for link in network.links.keys():
-        lon1, lat1 = node_positions[link[0]]
-        lon2, lat2 = node_positions[link[1]]
+    for node1, node2 in itertools.combinations(network.nodes.keys(), 2):
+        link = (node1, node2)
+        reverse_link = (node2, node1)
+        lon1, lat1 = node_positions[node1]
+        lon2, lat2 = node_positions[node2]
         x1, y1 = m(lon1, lat1)
         x2, y2 = m(lon2, lat2)
 
-        if link not in link_to_tracks:
+        if link not in link_to_tracks and reverse_link not in link_to_tracks:
             plt.plot([x1, x2], [y1, y2], color="gray", linewidth=0.1)
         else:
-            tracks_on_link = link_to_tracks[link]
-            dx, dy = (x2 - x1) / len(tracks_on_link), (y2 - y1) / \
-                len(tracks_on_link)
+            tracks_on_link, tracks_on_reverse_link = link_to_tracks.get(link, []), link_to_tracks.get(reverse_link, [])
+            count = len(tracks_on_link) + len(tracks_on_reverse_link)
+            dx, dy = (x2 - x1) / count, (y2 - y1) / count
             for i, track in enumerate(tracks_on_link):
-                plt.plot([x1 + i * dx, x1 + (i + 1) * dx], [y1 + i * dy, y1 +
-                         (i + 1) * dy], color=track_to_color[track], linewidth=3)
+                plt.arrow(x1 + i * dx, y1 + i * dy, dx, dy,
+                          color=track_to_color[track], linewidth=2, head_width=0.5, head_length=0.2)
+            for i, track in enumerate(reversed(tracks_on_reverse_link)):
+                plt.arrow(x2 - i * dx, y2 - i * dy, -dx, -dy,
+                          color=track_to_color[track], linewidth=2, head_width=0.5, head_length=0.2)
 
     # Plot nodes
     for node, (lon, lat) in node_positions.items():
