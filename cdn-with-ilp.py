@@ -1,11 +1,14 @@
-import json
 import hashlib
+import json
 import os
+from argparse import ArgumentParser
+import pulp as lp
+
 from model import Network, Node, display_network_links, display_track_stats
 from plot import get_plotter
 from solver import get_multi_track_optimizer
-from argparse import ArgumentParser
-from traffic import generate_live_video_traffic, generate_video_conference_traffic
+from traffic import (generate_live_video_traffic,
+                     generate_video_conference_traffic)
 
 CACHE_DIR = "./cache"
 
@@ -115,15 +118,50 @@ def hash_input_model(network: Network, tracks: dict[str, list[str]]) -> str:
     return hash_data.hexdigest()
 
 
-def optimize(network: Network, tracks: dict[str, list[str]], solver_type: str, debug: bool) -> dict[str, list[tuple[str, str]]]:
-    multi_track_optimizer = get_multi_track_optimizer(solver_type)
+def is_cached(input_model_hash: str) -> bool:
+    return os.path.exists(f"{CACHE_DIR}/{input_model_hash}.json")
 
-    status, used_links_per_track = multi_track_optimizer(
-        network, tracks, debug)
 
-    if debug:
-        status_message = "succeeded" if status else "failed"
-        print(f"Optimization {status_message}.")
+def read_from_cache(input_model_hash: str) -> dict[str, list[tuple[str, str]]]:
+    with open(f"{CACHE_DIR}/{input_model_hash}.json", "r") as f:
+        return json.load(f)
+
+
+def write_to_cache(input_model_hash: str, used_links_per_track: dict[str, list[tuple[str, str]]]):
+    if not os.path.exists(CACHE_DIR):
+        os.mkdir(CACHE_DIR)
+    with open(f"{CACHE_DIR}/{input_model_hash}.json", "w") as f:
+        json.dump(used_links_per_track, f)
+
+
+def get_optimal_topology(network: Network, tracks: dict[str, list[str]], solver_type: str, use_cache: bool = False, debug: bool = False) -> dict[str, list[tuple[str, str]]]:
+    input_model_hash = hash_input_model(network, tracks)
+
+    if use_cache and is_cached(input_model_hash):
+        if debug:
+            print("Using cached data...")
+
+        used_links_per_track = read_from_cache(input_model_hash)
+
+        # Transformation needed, since JSON makes tuples indistinguishable from lists
+        for links in used_links_per_track.values():
+            for i, link in enumerate(links):
+                links[i] = tuple(link)
+    else:
+        if debug:
+            print("Computing...")
+
+        multi_track_optimizer = get_multi_track_optimizer(solver_type)
+
+        status, used_links_per_track = multi_track_optimizer(
+            network, tracks, debug)
+
+        if debug:
+            status_message = "succeeded" if status == lp.LpStatusOptimal else "failed"
+            print(f"Optimization {status_message}.")
+
+        if use_cache:
+            write_to_cache(input_model_hash, used_links_per_track)
 
     return used_links_per_track
 
@@ -138,7 +176,7 @@ if __name__ == "__main__":
     parser.add_argument("--solver",
                         choices=["single", "multiple"], default="single", help="Solver to use")
     parser.add_argument("--debug",
-                        action="store_true", default=False, help="Debug mode")
+                        action="store_true", default=True, help="Debug mode")
     parser.add_argument("--plotter",
                         choices=["simple", "basemap"], default="basemap", help="Plotter to use")
     args = parser.parse_args()
@@ -152,38 +190,8 @@ if __name__ == "__main__":
     if args.debug:
         display_track_stats(nodes, tracks)
 
-    used_links_per_track = {}
-
-    if args.use_cache:
-        input_model_hash = hash_input_model(network, tracks)
-        cache_filename = f"{CACHE_DIR}/{input_model_hash}.json"
-
-        try:
-            # Read cached data if available
-            with open(cache_filename, "r") as f:
-                used_links_per_track = json.load(f)
-
-            print("Using cached data...")
-
-            # Transformation needed, since JSON makes tuples indistinguishable from lists
-            for links in used_links_per_track.values():
-                for i, link in enumerate(links):
-                    links[i] = tuple(link)
-        except FileNotFoundError:
-            print("Not cached yet, computing...")
-
-            used_links_per_track = optimize(
-                network, tracks, args.solver, args.debug)
-
-            # Cache the results
-            if not os.path.exists(CACHE_DIR):
-                os.mkdir(CACHE_DIR)
-            with open(cache_filename, "w") as f:
-                json.dump(used_links_per_track, f)
-    else:
-        print("Computing...")
-        used_links_per_track = optimize(
-            network, tracks, args.solver, args.debug)
+    used_links_per_track = get_optimal_topology(
+        network, tracks, args.solver, args.use_cache, args.debug)
 
     track_to_color = {track_id: color for track_id,
                       color in zip(tracks.keys(), COLORS)}
