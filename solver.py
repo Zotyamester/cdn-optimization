@@ -84,7 +84,7 @@ def multi_to_single_track_adapter(network: Network, tracks: dict[str, Track], de
     status = lp.const.LpStatusOptimal
     used_links_per_track = {}
     for track_id, track in tracks.items():
-        track_status, used_links = get_optimal_topology_for_a_single_track(network, track, debug=True)
+        track_status, used_links = get_optimal_topology_for_a_single_track(network, track, debug)
         used_links_per_track[track_id] = used_links
         if track_status != lp.const.LpStatusOptimal:
             status = track_status
