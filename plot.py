@@ -50,10 +50,10 @@ def basemap_plot_network(network: Network, tracks: dict[str, Track], track_to_co
         elif lat > max_lat:
             max_lat = lat
 
-    min_lon = max(min_lon * 1.1, -180)
-    max_lon = min(max_lon * 1.1, 180)
-    min_lat = max(min_lat * 1.1, -90)
-    max_lat = min(max_lat * 1.1, 90)
+    min_lon = max(min_lon - abs(min_lon) * 0.1, -180)
+    max_lon = min(max_lon + abs(max_lon) * 0.1, 180)
+    min_lat = max(min_lat - abs(min_lat) * 0.1, -90)
+    max_lat = min(max_lat + abs(max_lat) * 0.1, 90)
 
     m = Basemap(resolution="c", projection="merc",
                 llcrnrlon=min_lon, llcrnrlat=min_lat, urcrnrlon=max_lon, urcrnrlat=max_lat)
@@ -80,24 +80,28 @@ def basemap_plot_network(network: Network, tracks: dict[str, Track], track_to_co
         if link not in link_to_tracks and reverse_link not in link_to_tracks:
             plt.plot([x1, x2], [y1, y2], color="gray", linewidth=0.1)
         else:
-            tracks_on_link, tracks_on_reverse_link = link_to_tracks.get(link, []), link_to_tracks.get(reverse_link, [])
+            tracks_on_link, tracks_on_reverse_link = link_to_tracks.get(
+                link, []), link_to_tracks.get(reverse_link, [])
             count = len(tracks_on_link) + len(tracks_on_reverse_link)
             dx, dy = (x2 - x1) / count, (y2 - y1) / count
-            for i, track in enumerate(tracks_on_link):
-                plt.arrow(x1 + i * dx, y1 + i * dy, dx, dy,
-                          color=track_to_color[track], linewidth=2, head_width=0.5, head_length=0.2)
-            for i, track in enumerate(reversed(tracks_on_reverse_link)):
-                plt.arrow(x2 - i * dx, y2 - i * dy, -dx, -dy,
-                          color=track_to_color[track], linewidth=2, head_width=0.5, head_length=0.2)
+            plot_track_arrows(x1, y1, dx, dy, tracks_on_link, track_to_color)
+            plot_track_arrows(x2, y2,
+                              -dx, -dy, tracks_on_reverse_link, track_to_color)
 
     # Plot nodes
     for node, (lon, lat) in node_positions.items():
         x, y = m(lon, lat)
-        m.plot(x, y, "bo", markersize=10)
+        m.plot(x, y, "bo", markersize=6)
         plt.text(x, y, node, fontsize=12, ha="right",
                  va="bottom", color="black")
 
     plt.show()
+
+
+def plot_track_arrows(x1, y1, dx, dy, tracks_on_link, track_to_color):
+    for i, track in enumerate(tracks_on_link):
+        plt.arrow(x1 + i * dx, y1 + i * dy, dx, dy,
+                  color=track_to_color[track], linewidth=2, head_width=0.5, head_length=0.2, length_includes_head=True)
 
 
 def get_plotter(type: str) -> Callable[[Network, dict[str, Track], dict[str, str], dict[str, list[tuple[str, str]]]], None]:
