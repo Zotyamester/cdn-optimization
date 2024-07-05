@@ -110,7 +110,7 @@ def get_optimal_topology_for_multiple_tracks(network: Network, tracks: dict[str,
             f"z_{track_id}", (track.streams.keys(), network.links.keys()), 0, 1, cat=lp.LpBinary)
 
     # Objective function
-    prob += lp.lpSum([cost * link_usages[track_id][link] for link, (_, cost)
+    prob += lp.lpSum([cost * link_usages[track_id][link] for link, (_, cost, _)
                      in network.links.items() for track_id in tracks.keys()]), "total_link_usage"
 
     # Constraint: ytij >= xftij
@@ -148,8 +148,13 @@ def get_optimal_topology_for_multiple_tracks(network: Network, tracks: dict[str,
     for track_id, track in tracks.items():
         for stream, (delay_budget, _) in track.streams.items():
             prob += lp.lpSum([selected_links[track_id][stream][link] * latency
-                              for link, (latency, _) in network.links.items()]) <= delay_budget, \
+                              for link, (latency, _, _) in network.links.items()]) <= delay_budget, \
                 f"delay_budget_for_{track_id}_{stream}"
+
+    # # Constraint: sum(ytij) <= Cij
+    # for link in network.links.keys():
+    #     prob += lp.lpSum([link_usages[track_id][link]
+    #                       for track_id in tracks.keys()]) <= network.links[link].capacity, f"link_capacity_for_({link[0]},{link[1]})"
 
     prob.solve(lp.PULP_CBC_CMD(msg=False))
 

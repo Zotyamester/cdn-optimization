@@ -8,19 +8,19 @@ from collections import defaultdict
 @dataclass
 class Node:
     location: tuple[float, float]  # (latitude, longitude)
-    cost_factor: float
 
     def __iter__(self):
-        yield from (self.location, self.cost_factor)
+        yield from (self.location,)
 
 
 @dataclass
 class Link:
     latency: float
     cost: float
+    capacity: float
 
     def __iter__(self):
-        yield from (self.latency, self.cost)
+        yield from (self.latency, self.cost, self.capacity)
 
 
 class Network:
@@ -28,10 +28,11 @@ class Network:
 
     def __init__(self,
                  nodes: dict[str, Node],
-                 calculate_cost: Callable[[dict[str, Node], str, str], float] =
-                 lambda ns, n1, n2: (ns[n1].cost_factor + ns[n2].cost_factor) / 2):
+                 calculate_cost: Callable[[dict[str, Node], str, str], float],
+                 calculate_capacity: Callable[[dict[str, Node], str, str], float]):
         self.nodes = nodes
         self.calculate_cost = calculate_cost
+        self.calculate_capacity = calculate_capacity
         self.recreate_links()
 
     def recreate_links(self):
@@ -48,8 +49,10 @@ class Network:
 
             link_usage_cost = self.calculate_cost(self.nodes, node1, node2)
 
+            link_capacity = self.calculate_capacity(self.nodes, node1, node2)
+
             # Links are unidirectional, but there is a link in both ways with the same latency and usage cost
-            link = Link(latency_in_ms, link_usage_cost)
+            link = Link(latency_in_ms, link_usage_cost, link_capacity)
             self.links[(node1, node2)] = self.links[(node2, node1)] = link
 
     def __iter__(self):
@@ -72,10 +75,11 @@ class Stream:
 
 
 class Track:
-    def __init__(self, name: str, publisher: str, subscribers: list[tuple[str, float]]):
+    def __init__(self, name: str, publisher: str, subscribers: list[tuple[str, float]], bitrate: int = 1):
         self.name = name
         self._publisher = publisher
         self._subscribers = subscribers
+        self._bitrate = bitrate
         self.recreate_streams()
 
     def recreate_streams(self):
@@ -85,8 +89,8 @@ class Track:
             self.streams[stream_id] = Stream(
                 delay_budget,
                 defaultdict(lambda: 0, {
-                    self._publisher: -1,
-                    subscriber: 1
+                    self._publisher: -self._bitrate,
+                    subscriber: self._bitrate
                 })
             )
 
@@ -104,8 +108,9 @@ class Track:
 
 def display_network_links(network: Network):
     print("Links:")
-    for link, (latency, cost) in sorted(network.links.items(), key=lambda kv: kv[1].latency):
-        print(f" * {' <-> '.join(link)}:\t\t{latency:.2f} ms\t\t{cost:.2f}")
+    for link, (latency, cost, capacity) in sorted(network.links.items(), key=lambda kv: kv[1].latency):
+        print(f" * {' <-> '.join(link)
+                    }:\t\t{latency:.2f} ms\t\t{cost:.2f}\t\t{capacity:.2f}")
     print()
 
 
@@ -127,43 +132,3 @@ def display_track_stats(nodes: dict[str, Node], tracks: dict[str, Track]):
                 else:
                     print("")
         print()
-
-
-if __name__ == "__main__":
-    nodes = {
-        "eu-west-1":    Node((53.3498, -6.2603), 1.08),     # Dublin, IE
-        "eu-west-2":    Node((51.5074, -0.1278), 1.26),     # London, GB
-        "eu-west-3":    Node((48.8566, 2.3522), 1.08),      # Paris, FR
-        "eu-central-1": Node((50.1109, 8.6821), 1.08),      # Frankfurt, DE
-        "eu-north-1":   Node((59.3293, 18.0686), 0.094),    # Stockholm, SE
-        "eu-south-1":   Node((45.4642, 9.1900), 1.08),      # Milan, IT
-        "Aalborg":      Node((57.0169, 9.9891), 0.15),      # Aalborg, DK
-        "Budapest":     Node((47.4732, 19.0379), 0.0029),   # Budapest, HU
-    }
-
-    network = Network(nodes)
-    display_network_links(network)
-
-    tracks = {
-        "t1": Track(
-            name="Gajdos Összes Rövidítve",
-            publisher="eu-central-1",
-            subscribers=[
-                ("Budapest", 95),
-                ("Aalborg", 5),
-                ("eu-north-1", 16),
-                ("eu-south-1", 10),
-            ]
-        ),
-        "t2": Track(
-            name="Szirmay - A halálosztó",
-            publisher="eu-south-1",
-            subscribers=[
-                ("Budapest", 50),
-                ("Budapest", 30),
-                ("Aalborg", 10),
-                ("eu-north-1", 70),
-            ]
-        ),
-    }
-    display_track_stats(nodes, tracks)

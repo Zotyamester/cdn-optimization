@@ -2,11 +2,13 @@ import itertools
 from typing import Callable
 from model import Network, Track
 from mpl_toolkits.basemap import Basemap
+import matplotlib
+matplotlib.use("Agg") # This is needed to avoid a runtime error when running on a server
 import matplotlib.pyplot as plt
 import networkx as nx
 
 
-def simple_plot_network(network: Network, tracks: dict[str, Track], track_to_color: dict[str, str], used_links_per_track: dict[str, list[tuple[str, str]]]):
+def simple_plot_network(network: Network, tracks: dict[str, Track], track_to_color: dict[str, str], used_links_per_track: dict[str, list[tuple[str, str]]], filename: str):
     g = nx.DiGraph()
 
     for node, (location, cost_factor) in network.nodes.items():
@@ -26,17 +28,18 @@ def simple_plot_network(network: Network, tracks: dict[str, Track], track_to_col
                                edgelist=used_links, edge_color=track_to_color[track], width=3, arrowsize=15, node_size=3800)
 
     plt.axis("off")
-    plt.show()
+    plt.savefig(filename)
+    plt.close()
 
 
-def basemap_plot_network(network: Network, tracks: dict[str, Track], track_to_color: dict[str, str], used_links_per_track: dict[str, list[tuple[str, str]]]):
+def basemap_plot_network(network: Network, tracks: dict[str, Track], track_to_color: dict[str, str], used_links_per_track: dict[str, list[tuple[str, str]]], filename: str):
     min_lon = 90
     max_lon = -90
     min_lat = 180
     max_lat = -180
 
     node_positions = {}
-    for node, (location, _) in network.nodes.items():
+    for node, (location,) in network.nodes.items():
         lon, lat = location[1], location[0]
         node_positions[node] = (lon, lat)
 
@@ -95,7 +98,8 @@ def basemap_plot_network(network: Network, tracks: dict[str, Track], track_to_co
         plt.text(x, y, node, fontsize=12, ha="right",
                  va="bottom", color="black")
 
-    plt.show()
+    plt.savefig(filename)
+    plt.close()
 
 
 def plot_track_arrows(x1, y1, dx, dy, tracks_on_link, track_to_color):
@@ -104,7 +108,7 @@ def plot_track_arrows(x1, y1, dx, dy, tracks_on_link, track_to_color):
                   color=track_to_color[track], linewidth=2, head_width=0.5, head_length=0.2, length_includes_head=True)
 
 
-def get_plotter(type: str) -> Callable[[Network, dict[str, Track], dict[str, str], dict[str, list[tuple[str, str]]]], None]:
+def get_plotter(type: str) -> Callable[[Network, dict[str, Track], dict[str, str], dict[str, list[tuple[str, str]]], str], None]:
     if type == "simple":
         return simple_plot_network
     elif type == "basemap":
