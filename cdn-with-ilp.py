@@ -1,12 +1,12 @@
 import hashlib
 import json
 import os
+import time
 from argparse import ArgumentParser
-import pulp as lp
 
-from sample import network
 from model import Network, Track, display_network_links, display_track_stats
 from plot import get_plotter
+from sample import network
 from solver import get_multi_track_optimizer
 from traffic import (generate_live_video_traffic,
                      generate_video_conference_traffic)
@@ -60,42 +60,36 @@ def get_optimal_topology(network: Network, tracks: dict[str, Track], solver_type
 
         multi_track_optimizer = get_multi_track_optimizer(solver_type)
 
-        status, used_links_per_track = multi_track_optimizer(
-            network, tracks, debug)
+        success, objective, used_links_per_track = multi_track_optimizer(
+            network, tracks)
 
         if debug:
-            status_message = "succeeded" if status == lp.LpStatusOptimal else "failed"
-            print(f"Optimization {status_message}.")
+            print(f"Optimization {"succeeded" if success else "failed"}:")
+            print(f"\tTotal cost of network: {objective:.2f} USD")
+            for track, links in used_links_per_track.items():
+                print(f"\t{track}: {", ".join(
+                    f"{node1} <-> {node2}" for (node1, node2) in links)}")
 
-        if use_cache and status == lp.LpStatusOptimal:
+        if use_cache and success:
             write_to_cache(input_model_hash, used_links_per_track)
 
     return used_links_per_track
 
 
-def generate_sample_traffic(type: str) -> dict[str, Track]:
-    if type == "live":
-        CONTENT_1 = "Gajdos Összes Rövidítve"
-        CONTENT_2 = "Szirmay - A halálosztó"
+def generate_sample_traffic(type: str, peers: list[str]) -> dict[str, Track]:
+    if len(peers) < 2:
+        raise ValueError("At least two peers are needed")
 
-        publishers = [("eu-central-1", [CONTENT_1]),
-                      ("eu-south-1", [CONTENT_2])]
+    if type == "live":
+        CONTENT = "Gajdos Összes Rövidítve"
+
+        publishers = [(peers[0], [CONTENT])]
         qci_table = [0, 100, 150, 50, 300, 100, 300, 100, 300]
-        subscribers = [
-            ("Budapest", 1, {CONTENT_1, CONTENT_2}),
-            ("Aalborg", 2, {CONTENT_1, CONTENT_2}),
-            ("eu-north-1", 3, {CONTENT_1, CONTENT_2}),
-            ("eu-south-1", 4, {CONTENT_1}),
-            ("us-east-1", 5, {CONTENT_1}),
-            ("us-west-1", 6, {CONTENT_1}),
-            ("us-west-2", 7, {CONTENT_1}),
-        ]
+        subscribers = [(peers[i], min(i, 7), CONTENT) for i in range(1, len(peers))]
 
         return generate_live_video_traffic(
             publishers, qci_table, subscribers)
     elif type == "video-conference":
-        peers = ["Budapest", "Aalborg", "eu-west-3", "eu-west-2",
-                 "eu-north-1", "us-west-1", "us-west-2", "eu-central-1"]
         return generate_video_conference_traffic(peers)
     else:
         raise ValueError(f"Unknown traffic type: {type}")
@@ -103,11 +97,15 @@ def generate_sample_traffic(type: str) -> dict[str, Track]:
 
 if __name__ == "__main__":
     parser = ArgumentParser(
-        description="MoQ Relay Topology Optimization with ILP")
+        description="MoQ Relay Topology Optimization")
     parser.add_argument("--traffic-type",
                         choices=["live", "video-conference"], default="video-conference", help="Type of traffic to generate")
+    parser.add_argument("--peers", nargs="+", default=["us-west-1", "us-west-2", "eu-central-1", "eu-south-1"],
+                        help="Peers to generate traffic for")
     parser.add_argument("--use-cache",
                         action="store_true", default=False, help="Cache the results (using the input data as a key)")
+    parser.add_argument("--use-reduced-network", action="store_true", default=False,
+                        help="Reduce the computing space by ignoring nodes that are neither publishers nor subscribers")
     parser.add_argument("--solver",
                         choices=["single", "multiple"], default="multiple", help="Solver to use")
     parser.add_argument("--debug",
@@ -116,20 +114,32 @@ if __name__ == "__main__":
                         choices=["simple", "basemap"], default="basemap", help="Plotter to use")
     args = parser.parse_args()
 
-    tracks = generate_sample_traffic(args.traffic_type)
+    if args.use_reduced_network:
+        network.nodes = dict(
+            filter(lambda kv: kv[0] in set(args.peers), network.nodes.items()))
+        network.recreate_links()
+
+    tracks = generate_sample_traffic(args.traffic_type, args.peers)
+
     if args.debug:
         display_network_links(network)
         display_track_stats(network.nodes, tracks)
 
+    start = time.time()
     used_links_per_track = get_optimal_topology(
         network, tracks, args.solver, args.use_cache, args.debug)
+    end = time.time()
+
+    delta = end - start
+    if args.debug:
+        print(f"Computation time: {delta:.2f} s")
 
     track_to_color = {track_id: color for track_id,
                       color in zip(tracks.keys(), COLORS)}
-    
 
     if not os.path.exists(PLOT_DIR):
         os.mkdir(PLOT_DIR)
-        
+
     plotter = get_plotter(args.plotter)
-    plotter(network, tracks, track_to_color, used_links_per_track, f"{PLOT_DIR}/{args.traffic_type}.png")
+    plotter(network, tracks, track_to_color, used_links_per_track,
+            f"{PLOT_DIR}/{args.traffic_type}.png")
