@@ -18,99 +18,86 @@ nodes = {
     "us-west-2":    Node((45.5231, -122.6765)),   # Oregon, US
 }
 
-link_attrs = {
-    ("eu-west-1", "eu-west-2"): (0.02, 100),  # Dublin to London
-    ("eu-west-1", "eu-west-3"): (0.03, 100),  # Dublin to Paris
-    ("eu-west-1", "eu-central-1"): (0.04, 100),  # Dublin to Frankfurt
-    ("eu-west-1", "eu-north-1"): (0.05, 100),  # Dublin to Stockholm
-    ("eu-west-1", "eu-south-1"): (0.06, 100),  # Dublin to Milan
-    ("eu-west-1", "Aalborg"): (0.07, 100),  # Dublin to Aalborg
-    ("eu-west-1", "Budapest"): (0.08, 100),  # Dublin to Budapest
-    ("eu-west-1", "us-east-1"): (0.09, 100),  # Dublin to Northern Virginia
-    ("eu-west-1", "us-west-1"): (0.10, 100),  # Dublin to San Francisco
-    ("eu-west-1", "us-west-2"): (0.11, 100),  # Dublin to Oregon
+link_costs = {
+    ("eu-west-1", "eu-west-2"): 0.02,  # Dublin to London
+    ("eu-west-1", "eu-west-3"): 0.03,  # Dublin to Paris
+    ("eu-west-1", "eu-central-1"): 0.04,  # Dublin to Frankfurt
+    ("eu-west-1", "eu-north-1"): 0.05,  # Dublin to Stockholm
+    ("eu-west-1", "eu-south-1"): 0.06,  # Dublin to Milan
+    ("eu-west-1", "Aalborg"): 0.07,  # Dublin to Aalborg
+    ("eu-west-1", "Budapest"): 0.08,  # Dublin to Budapest
+    ("eu-west-1", "us-east-1"): 0.09,  # Dublin to Northern Virginia
+    ("eu-west-1", "us-west-1"): 0.10,  # Dublin to San Francisco
+    ("eu-west-1", "us-west-2"): 0.11,  # Dublin to Oregon
 
-    ("eu-west-2", "eu-west-3"): (0.02, 100),  # London to Paris
-    ("eu-west-2", "eu-central-1"): (0.03, 100),  # London to Frankfurt
-    ("eu-west-2", "eu-north-1"): (0.04, 100),  # London to Stockholm
-    ("eu-west-2", "eu-south-1"): (0.05, 100),  # London to Milan
-    ("eu-west-2", "Aalborg"): (0.06, 100),  # London to Aalborg
-    ("eu-west-2", "Budapest"): (0.07, 100),  # London to Budapest
-    ("eu-west-2", "us-east-1"): (0.08, 100),  # London to Northern Virginia
-    ("eu-west-2", "us-west-1"): (0.09, 100),  # London to San Francisco
-    ("eu-west-2", "us-west-2"): (0.10, 100),  # London to Oregon
+    ("eu-west-2", "eu-west-3"): 0.02,  # London to Paris
+    ("eu-west-2", "eu-central-1"): 0.03,  # London to Frankfurt
+    ("eu-west-2", "eu-north-1"): 0.04,  # London to Stockholm
+    ("eu-west-2", "eu-south-1"): 0.05,  # London to Milan
+    ("eu-west-2", "Aalborg"): 0.06,  # London to Aalborg
+    ("eu-west-2", "Budapest"): 0.07,  # London to Budapest
+    ("eu-west-2", "us-east-1"): 0.08,  # London to Northern Virginia
+    ("eu-west-2", "us-west-1"): 0.09,  # London to San Francisco
+    ("eu-west-2", "us-west-2"): 0.10,  # London to Oregon
 
-    ("eu-west-3", "eu-central-1"): (0.02, 100),  # Paris to Frankfurt
-    ("eu-west-3", "eu-north-1"): (0.03, 100),  # Paris to Stockholm
-    ("eu-west-3", "eu-south-1"): (0.04, 100),  # Paris to Milan
-    ("eu-west-3", "Aalborg"): (0.05, 100),  # Paris to Aalborg
-    ("eu-west-3", "Budapest"): (0.06, 100),  # Paris to Budapest
-    ("eu-west-3", "us-east-1"): (0.07, 100),  # Paris to Northern Virginia
-    ("eu-west-3", "us-west-1"): (0.08, 100),  # Paris to San Francisco
-    ("eu-west-3", "us-west-2"): (0.09, 100),  # Paris to Oregon
+    ("eu-west-3", "eu-central-1"): 0.02,  # Paris to Frankfurt
+    ("eu-west-3", "eu-north-1"): 0.03,  # Paris to Stockholm
+    ("eu-west-3", "eu-south-1"): 0.04,  # Paris to Milan
+    ("eu-west-3", "Aalborg"): 0.05,  # Paris to Aalborg
+    ("eu-west-3", "Budapest"): 0.06,  # Paris to Budapest
+    ("eu-west-3", "us-east-1"): 0.07,  # Paris to Northern Virginia
+    ("eu-west-3", "us-west-1"): 0.08,  # Paris to San Francisco
+    ("eu-west-3", "us-west-2"): 0.09,  # Paris to Oregon
 
-    ("eu-central-1", "eu-north-1"): (0.02, 100),  # Frankfurt to Stockholm
-    ("eu-central-1", "eu-south-1"): (0.03, 100),  # Frankfurt to Milan
-    ("eu-central-1", "Aalborg"): (0.04, 100),  # Frankfurt to Aalborg
-    ("eu-central-1", "Budapest"): (0.05, 100),  # Frankfurt to Budapest
-    ("eu-central-1", "us-east-1"): (0.06, 100), # Frankfurt to Northern Virginia
-    ("eu-central-1", "us-west-1"): (0.07, 100),  # Frankfurt to San Francisco
-    ("eu-central-1", "us-west-2"): (0.08, 100),  # Frankfurt to Oregon
+    ("eu-central-1", "eu-north-1"): 0.02,  # Frankfurt to Stockholm
+    ("eu-central-1", "eu-south-1"): 0.03,  # Frankfurt to Milan
+    ("eu-central-1", "Aalborg"): 0.04,  # Frankfurt to Aalborg
+    ("eu-central-1", "Budapest"): 0.05,  # Frankfurt to Budapest
+    ("eu-central-1", "us-east-1"): 0.06,  # Frankfurt to Northern Virginia
+    ("eu-central-1", "us-west-1"): 0.07,  # Frankfurt to San Francisco
+    ("eu-central-1", "us-west-2"): 0.08,  # Frankfurt to Oregon
 
-    ("eu-north-1", "eu-south-1"): (0.02, 100),  # Stockholm to Milan
-    ("eu-north-1", "Aalborg"): (0.03, 100),  # Stockholm to Aalborg
-    ("eu-north-1", "Budapest"): (0.04, 100),  # Stockholm to Budapest
-    ("eu-north-1", "us-east-1"): (0.05, 100),  # Stockholm to Northern Virginia
-    ("eu-north-1", "us-west-1"): (0.06, 100),  # Stockholm to San Francisco
-    ("eu-north-1", "us-west-2"): (0.07, 100),  # Stockholm to Oregon
+    ("eu-north-1", "eu-south-1"): 0.02,  # Stockholm to Milan
+    ("eu-north-1", "Aalborg"): 0.03,  # Stockholm to Aalborg
+    ("eu-north-1", "Budapest"): 0.04,  # Stockholm to Budapest
+    ("eu-north-1", "us-east-1"): 0.05,  # Stockholm to Northern Virginia
+    ("eu-north-1", "us-west-1"): 0.06,  # Stockholm to San Francisco
+    ("eu-north-1", "us-west-2"): 0.07,  # Stockholm to Oregon
 
-    ("eu-south-1", "Aalborg"): (0.02, 100),  # Milan to Aalborg
-    ("eu-south-1", "Budapest"): (0.03, 100),  # Milan to Budapest
-    ("eu-south-1", "us-east-1"): (0.04, 100),  # Milan to Northern Virginia
-    ("eu-south-1", "us-west-1"): (0.05, 100),  # Milan to San Francisco
-    ("eu-south-1", "us-west-2"): (0.06, 100),  # Milan to Oregon
+    ("eu-south-1", "Aalborg"): 0.02,  # Milan to Aalborg
+    ("eu-south-1", "Budapest"): 0.03,  # Milan to Budapest
+    ("eu-south-1", "us-east-1"): 0.04,  # Milan to Northern Virginia
+    ("eu-south-1", "us-west-1"): 0.05,  # Milan to San Francisco
+    ("eu-south-1", "us-west-2"): 0.06,  # Milan to Oregon
 
-    ("Aalborg", "Budapest"): (0.04, 100),  # Aalborg to Budapest
-    ("Aalborg", "us-east-1"): (0.03, 100),  # Aalborg to Northern Virginia
-    ("Aalborg", "us-west-1"): (0.04, 100),  # Aalborg to San Francisco
-    ("Aalborg", "us-west-2"): (0.05, 100),  # Aalborg to Oregon
+    ("Aalborg", "Budapest"): 0.04,  # Aalborg to Budapest
+    ("Aalborg", "us-east-1"): 0.03,  # Aalborg to Northern Virginia
+    ("Aalborg", "us-west-1"): 0.04,  # Aalborg to San Francisco
+    ("Aalborg", "us-west-2"): 0.05,  # Aalborg to Oregon
 
-    ("Budapest", "us-east-1"): (0.02, 100),  # Budapest to Northern Virginia
-    ("Budapest", "us-west-1"): (0.03, 100),  # Budapest to San Francisco
-    ("Budapest", "us-west-2"): (0.04, 100),  # Budapest to Oregon
+    ("Budapest", "us-east-1"): 0.02,  # Budapest to Northern Virginia
+    ("Budapest", "us-west-1"): 0.03,  # Budapest to San Francisco
+    ("Budapest", "us-west-2"): 0.04,  # Budapest to Oregon
 
+    ("us-east-1", "us-west-1"): 0.02,  # Northern Virginia to San Francisco
+    ("us-east-1", "us-west-2"): 0.03,  # Northern Virginia to Oregon
 
-    # Northern Virginia to San Francisco
-    ("us-east-1", "us-west-1"): (0.02, 100),
-    ("us-east-1", "us-west-2"): (0.03, 100),  # Northern Virginia to Oregon
-
-    ("us-west-1", "us-west-2"): (0.02, 100),  # San Francisco to Oregon
+    ("us-west-1", "us-west-2"): 0.02,  # San Francisco to Oregon
 }
 
 
 def calculate_cost(_, node1, node2):
-    global link_attrs
+    global link_costs
     link = (node1, node2)
-    if link in link_attrs:
-        return link_attrs[link][0]
+    if link in link_costs:
+        return link_costs[link]
     reverse_link = (node2, node1)
-    if reverse_link in link_attrs:
-        return link_attrs[reverse_link][0]
+    if reverse_link in link_costs:
+        return link_costs[reverse_link]
     raise ValueError(f"Link cost not found for {link} or {reverse_link}")
 
 
-def calculate_capacity(_, node1, node2):
-    global link_attrs
-    link = (node1, node2)
-    if link in link_attrs:
-        return link_attrs[link][1]
-    reverse_link = (node2, node1)
-    if reverse_link in link_attrs:
-        return link_attrs[reverse_link][1]
-    raise ValueError(f"Link capacity not found for {link} or {reverse_link}")
-
-
-network = Network(nodes, calculate_cost, calculate_capacity)
+network = Network(nodes, calculate_cost)
 
 if __name__ == "__main__":
     triangle_inequality_satisfied = 0

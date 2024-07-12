@@ -17,10 +17,9 @@ class Node:
 class Link:
     latency: float
     cost: float
-    capacity: float
 
     def __iter__(self):
-        yield from (self.latency, self.cost, self.capacity)
+        yield from (self.latency, self.cost)
 
 
 class Network:
@@ -28,11 +27,9 @@ class Network:
 
     def __init__(self,
                  nodes: dict[str, Node],
-                 calculate_cost: Callable[[dict[str, Node], str, str], float],
-                 calculate_capacity: Callable[[dict[str, Node], str, str], float]):
+                 calculate_cost: Callable[[dict[str, Node], str, str], float]):
         self.nodes = nodes
         self.calculate_cost = calculate_cost
-        self.calculate_capacity = calculate_capacity
         self.recreate_links()
 
     def recreate_links(self):
@@ -49,10 +46,8 @@ class Network:
 
             link_usage_cost = self.calculate_cost(self.nodes, node1, node2)
 
-            link_capacity = self.calculate_capacity(self.nodes, node1, node2)
-
             # Links are unidirectional, but there is a link in both ways with the same latency and usage cost
-            link = Link(latency_in_ms, link_usage_cost, link_capacity)
+            link = Link(latency_in_ms, link_usage_cost)
             self.links[(node1, node2)] = self.links[(node2, node1)] = link
 
     def __iter__(self):
@@ -75,22 +70,21 @@ class Stream:
 
 
 class Track:
-    def __init__(self, name: str, publisher: str, subscribers: list[tuple[str, float]], bitrate: int = 1):
+    def __init__(self, name: str, publisher: str, subscribers: dict[str, float]):
         self.name = name
         self._publisher = publisher
         self._subscribers = subscribers
-        self._bitrate = bitrate
         self.recreate_streams()
 
     def recreate_streams(self):
         self.streams = {}
-        for i, (subscriber, delay_budget) in enumerate(self._subscribers, start=1):
+        for i, (subscriber, delay_budget) in enumerate(self._subscribers.items(), start=1):
             stream_id = f"f{i}"
             self.streams[stream_id] = Stream(
                 delay_budget,
                 defaultdict(lambda: 0, {
-                    self._publisher: -self._bitrate,
-                    subscriber: self._bitrate
+                    self._publisher: -1,
+                    subscriber: 1
                 })
             )
 
@@ -100,7 +94,7 @@ class Track:
     def __str__(self) -> str:
         return f"Track {self.name}: " \
             f"{self._publisher} -> {
-                ', '.join(map(lambda node_and_delay: node_and_delay[0], self._subscribers))}"
+                ', '.join(map(lambda node_and_delay: node_and_delay[0], self._subscribers.items()))}"
 
     def __repr__(self) -> str:
         return str(self)
@@ -108,9 +102,8 @@ class Track:
 
 def display_network_links(network: Network):
     print("Links:")
-    for link, (latency, cost, capacity) in sorted(network.links.items(), key=lambda kv: kv[1].latency):
-        print(f" * {' <-> '.join(link)
-                    }:\t\t{latency:.2f} ms\t\t{cost:.2f}\t\t{capacity:.2f}")
+    for link, (latency, cost) in sorted(network.links.items(), key=lambda kv: kv[1].latency):
+        print(f" * {' <-> '.join(link)}:\t\t{latency:.2f} ms\t\t{cost:.2f}")
     print()
 
 
