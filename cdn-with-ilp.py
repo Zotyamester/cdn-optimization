@@ -4,7 +4,9 @@ import os
 import time
 from argparse import ArgumentParser
 
-from model import Network, Track, display_network_links, display_track_stats
+import networkx as nx
+
+from model import Track, display_network_links, display_tracks_stats
 from plot import get_plotter
 from sample import network
 from solver import get_multi_track_optimizer
@@ -19,8 +21,8 @@ COLORS = ["red", "blue", "green", "yellow",
           "purple", "orange", "pink", "brown"]
 
 
-def hash_input_model(network: Network, tracks: dict[str, list[str]]) -> str:
-    base_str = str(network) + str(tracks)
+def hash_input_model(network: nx.DiGraph, tracks: dict[str, list[str]]) -> str:
+    base_str = str(network.nodes) + str(network.edges(data=True)) + str(tracks)
     hash_data = hashlib.sha256(base_str.encode())
     return hash_data.hexdigest()
 
@@ -41,7 +43,7 @@ def write_to_cache(input_model_hash: str, used_links_per_track: dict[str, list[t
         json.dump(used_links_per_track, f)
 
 
-def get_optimal_topology(network: Network, tracks: dict[str, Track], solver_type: str, use_cache: bool = False, debug: bool = False) -> dict[str, list[tuple[str, str]]]:
+def get_optimal_topology(network: nx.DiGraph, tracks: dict[str, Track], solver_type: str, use_cache: bool = False, debug: bool = False) -> dict[str, list[tuple[str, str]]]:
     input_model_hash = hash_input_model(network, tracks)
 
     if use_cache and is_cached(input_model_hash):
@@ -84,11 +86,10 @@ def generate_sample_traffic(type: str, peers: list[str]) -> dict[str, Track]:
         CONTENT = "Gajdos Összes Rövidítve"
 
         publishers = [(peers[0], [CONTENT])]
-        qci_table = [0, 100, 150, 50, 300, 100, 300, 100, 300]
-        subscribers = [(peers[i], min(i, 7), CONTENT) for i in range(1, len(peers))]
+        subscribers = [(peers[i], CONTENT)
+                       for i in range(1, len(peers))]
 
-        return generate_live_video_traffic(
-            publishers, qci_table, subscribers)
+        return generate_live_video_traffic(publishers, subscribers)
     elif type == "video-conference":
         return generate_video_conference_traffic(peers)
     else:
@@ -100,30 +101,31 @@ if __name__ == "__main__":
         description="MoQ Relay Topology Optimization")
     parser.add_argument("--traffic-type",
                         choices=["live", "video-conference"], default="video-conference", help="Type of traffic to generate")
-    parser.add_argument("--peers", nargs="+", default=["us-west-1", "us-west-2", "eu-central-1", "eu-south-1"],
+    parser.add_argument("--peers", nargs="+", default=["us-west-1", "us-west-2", "us-east-1", "eu-central-1", "eu-south-1"],
                         help="Peers to generate traffic for")
     parser.add_argument("--use-cache",
                         action="store_true", default=False, help="Cache the results (using the input data as a key)")
     parser.add_argument("--use-reduced-network", action="store_true", default=False,
                         help="Reduce the computing space by ignoring nodes that are neither publishers nor subscribers")
     parser.add_argument("--solver",
-                        choices=["single", "multiple"], default="multiple", help="Solver to use")
+                        choices=["single", "multiple"], default="single", help="Solver to use")
     parser.add_argument("--debug",
                         action="store_true", default=True, help="Debug mode")
     parser.add_argument("--plotter",
                         choices=["simple", "basemap"], default="basemap", help="Plotter to use")
+    parser.add_argument("--plot-name", default="plot",
+                        help="Name of the plot file (without extension)")
     args = parser.parse_args()
 
     if args.use_reduced_network:
-        network.nodes = dict(
-            filter(lambda kv: kv[0] in set(args.peers), network.nodes.items()))
-        network.recreate_links()
+        raise NotImplementedError(
+            "Reducing the network is not yet implemented")
 
     tracks = generate_sample_traffic(args.traffic_type, args.peers)
 
     if args.debug:
         display_network_links(network)
-        display_track_stats(network.nodes, tracks)
+        display_tracks_stats(tracks)
 
     start = time.time()
     used_links_per_track = get_optimal_topology(
@@ -142,4 +144,4 @@ if __name__ == "__main__":
 
     plotter = get_plotter(args.plotter)
     plotter(network, tracks, track_to_color, used_links_per_track,
-            f"{PLOT_DIR}/{args.traffic_type}.png")
+            f"{PLOT_DIR}/{args.plot_name}.png")

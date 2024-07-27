@@ -1,22 +1,19 @@
-from model import Network, Node
+from model import create_graph, default_calculate_cost
 
 
-nodes = {
+nodes = [
     # European nodes
-    "eu-west-1":    Node((53.3498, -6.2603)),     # Dublin, IE
-    "eu-west-2":    Node((51.5074, -0.1278)),     # London, GB
-    "eu-west-3":    Node((48.8566, 2.3522)),      # Paris, FR
-    "eu-central-1": Node((50.1109, 8.6821)),      # Frankfurt, DE
-    "eu-north-1":   Node((59.3293, 18.0686)),    # Stockholm, SE
-    "eu-south-1":   Node((45.4642, 9.1900)),      # Milan, IT
-    "Aalborg":      Node((57.0169, 9.9891)),      # Aalborg, DK
-    "Budapest":     Node((47.4732, 19.0379)),    # Budapest, HU
-
-    # Other nodes
-    "us-east-1":    Node((39.0481, -77.4729)),    # Northern Virginia, US
-    "us-west-1":    Node((37.7749, -122.4194)),   # San Francisco, US
-    "us-west-2":    Node((45.5231, -122.6765)),   # Oregon, US
-}
+    ("eu-west-1",    {"location": (53.3498, -6.2603),   "egress_cost": 0.02, "ingress_cost": 0.0}),  # Dublin, IE
+    ("eu-west-2",    {"location": (51.5074, -0.1278),   "egress_cost": 0.02, "ingress_cost": 0.0}),  # London, GB
+    ("eu-west-3",    {"location": (48.8566, 2.3522),    "egress_cost": 0.02, "ingress_cost": 0.0}),  # Paris, FR
+    ("eu-central-1", {"location": (50.1109, 8.6821),    "egress_cost": 0.02, "ingress_cost": 0.0}),  # Frankfurt, DE
+    ("eu-north-1",   {"location": (59.3293, 18.0686),   "egress_cost": 0.02, "ingress_cost": 0.0}),  # Stockholm, SE
+    ("eu-south-1",   {"location": (45.4642, 9.1900),    "egress_cost": 0.02, "ingress_cost": 0.0}),  # Milan, IT
+    # American nodes
+    ("us-east-1",    {"location": (39.0481, -77.4729),  "egress_cost": 0.02, "ingress_cost": 0.0}),  # Northern Virginia, US
+    ("us-west-1",    {"location": (37.7749, -122.4194), "egress_cost": 0.02, "ingress_cost": 0.0}),  # San Francisco, US
+    ("us-west-2",    {"location": (45.5231, -122.6765), "egress_cost": 0.02, "ingress_cost": 0.0}),  # Oregon, US
+]
 
 link_costs = {
     ("eu-west-1", "eu-west-2"): 0.02,  # Dublin to London
@@ -97,23 +94,26 @@ def calculate_cost(_, node1, node2):
     raise ValueError(f"Link cost not found for {link} or {reverse_link}")
 
 
-network = Network(nodes, calculate_cost)
+network = create_graph(nodes, calculate_cost=calculate_cost)
 
 if __name__ == "__main__":
     triangle_inequality_satisfied = 0
 
-    for start_node in nodes.keys():
-        for end_node in nodes.keys():
+    for start_node in network.nodes:
+        for end_node in network.nodes:
             if end_node == start_node:
                 continue
 
-            for intermediate_node in nodes.keys():
+            for intermediate_node in network.nodes:
                 if intermediate_node == start_node or intermediate_node == end_node:
                     continue
 
-                cost1 = calculate_cost(nodes, start_node, intermediate_node)
-                cost2 = calculate_cost(nodes, intermediate_node, end_node)
-                cost_direct = calculate_cost(nodes, start_node, end_node)
+                cost1 = calculate_cost(
+                    network, start_node, intermediate_node)
+                cost2 = calculate_cost(
+                    network, intermediate_node, end_node)
+                cost_direct = calculate_cost(
+                    network, start_node, end_node)
 
                 print(f"{start_node} -> {intermediate_node} -> {end_node}")
                 if cost1 + cost2 >= cost_direct:
