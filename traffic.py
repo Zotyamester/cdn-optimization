@@ -27,7 +27,7 @@ def generate_live_video_traffic(publishers: list[tuple[str, list[str]]], subscri
             tracks[f"t{i}"] = Track(
                 name=content,
                 publisher=publisher,
-                subscribers=[subscriber for subscriber, qci, desired_contents in subscribers if content in desired_contents],
+                subscribers=[subscriber for subscriber, desired_contents in subscribers if content in desired_contents],
                 delay_budget=2000
             )
             i += 1

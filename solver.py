@@ -1,3 +1,5 @@
+from collections import namedtuple
+import math
 from typing import Callable
 
 import networkx as nx
@@ -41,7 +43,106 @@ class MultiTrackSolution:
     def not_found() -> 'MultiTrackSolution':
         return MultiTrackSolution(False, 0.0, {})
 
+# Spectrum::LeftMost - Keeping the delay constraints
+def direct_link_tree(graph: nx.Graph, track: Track) -> SingleTrackSolution:
+    cost = 0.0
+    edges = []
+    for subscriber in track.subscribers:
+        edge = (track.publisher, subscriber)
 
+        data = graph.get_edge_data(*edge)
+        if data["latency"] > track.delay_budget:
+            return SingleTrackSolution.not_found()
+
+        cost += data["cost"]
+        edges.append(edge)
+
+    return SingleTrackSolution.found(cost, edges)
+
+
+# Spectrum::Left - Approximately optimal in cost while keeping the delay constraints
+def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
+    latencies = {track.publisher: 0.0}
+    cost = 0.0
+    tree = nx.DiGraph()
+    tree.add_node(track.publisher)
+
+    for node in track.subscribers:
+        if node == track.publisher:
+            continue
+
+        # Find the best edge to connect the node to the tree (without reordering the whole tree)
+
+        best_edge = min(
+            filter(
+                lambda edge: edge[1] in tree.nodes and latencies[edge[1]] +
+                graph.get_edge_data(*edge)["latency"] <= track.delay_budget,
+                graph.edges(node)
+            ),
+            key=lambda edge: (graph.get_edge_data(
+                *edge)["cost"], graph.get_edge_data(*edge)["latency"]),
+            default=None
+        )
+
+        # Didn"t find any suitable edge (i.e., not even the direct link to the publisher would work)
+        if best_edge is None:
+            return SingleTrackSolution.not_found()
+
+        connection_node = best_edge[1]
+
+        # See if we can improve one of our existing connections by redirecting traffic through the new node
+
+        Replacement = namedtuple("Replacement", [
+                                 "new_edge", "old_edge", "subtree", "delay_balance", "cost_balance"])
+        best_replacement = Replacement(None, None, [], 0.0, math.inf)
+
+        loop_causing_nodes = {track.publisher} | set(
+            nx.predecessor(graph, connection_node))
+
+        for tree_node in tree.nodes:
+            if tree_node in loop_causing_nodes:
+                continue
+
+            previous_node = next(iter(nx.predecessor(tree, tree_node)))
+
+            to_be_replaced_edge = (previous_node, tree_node)
+            replacement_edge = (node, tree_node)
+
+            delay_balance = graph.get_edge_data(
+                *replacement_edge)["latency"] - graph.get_edge_data(*to_be_replaced_edge)["latency"]
+            cost_balance = graph.get_edge_data(
+                *replacement_edge)["cost"] - graph.get_edge_data(*to_be_replaced_edge)["cost"]
+
+            # If the delay budget could not be met by redirecting the traffic, continue
+            subtree = [v for _, v in nx.bfs_edges(graph, tree_node)]
+            if not all(latencies[v] + delay_balance for v in subtree):
+                continue
+
+            # Note that if the balance negative, it's a cost reduction
+            if cost_balance < best_replacement.cost_balance:
+                best_replacement = Replacement(
+                    replacement_edge, to_be_replaced_edge, subtree, delay_balance, cost_balance)
+
+        if best_replacement.cost_balance < 0 or (best_replacement.cost_balance == 0 and best_replacement.delay_balance < 0):
+            tree.remove_edge(*best_replacement.old_edge)
+            tree.add_edge(*best_replacement.new_edge)
+            cost += best_replacement.cost_balance
+            for v in best_replacement.subtree:
+                latencies[v] += best_replacement.delay_balance
+
+        # Add the edge to the tree and update the cost and latencies
+
+        edge_data = graph.get_edge_data(*best_edge)
+        best_cost, best_latency = edge_data["cost"], edge_data["latency"]
+
+        tree.add_edge(*best_edge)
+        cost += best_cost
+        latencies[node] = latencies[connection_node] + best_latency
+
+    return SingleTrackSolution.found(cost, list(tree.edges))
+
+
+# Spectrum::Right - Optimal in cost while keeping the delay constraints
 def get_optimal_topology_for_a_single_track(network: nx.DiGraph, track: Track) -> SingleTrackSolution:
     prob = lp.LpProblem("MoQ_relay_topology_optimization", lp.LpMinimize)
 
@@ -106,18 +207,45 @@ def get_optimal_topology_for_a_single_track(network: nx.DiGraph, track: Track) -
     return SingleTrackSolution.found(objective, used_links)
 
 
-def multi_to_single_track_adapter(network: nx.DiGraph, tracks: dict[str, Track]) -> MultiTrackSolution:
-    objective = 0.0
-    used_links_per_track = {}
-    for track_id, track in tracks.items():
-        track_success, track_objective, used_links = get_optimal_topology_for_a_single_track(
-            network, track)
-        if not track_success:
-            return MultiTrackSolution.not_found()
+# Spectrum::RightMost - Optimal in cost
+def minimum_spanning_tree(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
+    graph = graph.to_undirected()
+    graph.remove_nodes_from(
+        set(graph.nodes) - {track.publisher} - set(track.subscribers))
 
-        objective += track_objective
-        used_links_per_track[track_id] = used_links
-    return MultiTrackSolution.found(objective, used_links_per_track)
+    mst = nx.minimum_spanning_tree(graph, weight="cost")
+    mst_from_publisher = nx.bfs_tree(mst, track.publisher)
+
+    cost = 0.0
+    latencies = {track.publisher: 0.0}
+    for u, v in mst_from_publisher.edges:
+        data = graph.get_edge_data(u, v)
+
+        cost += data["cost"]
+        latencies[v] = latencies[u] + data["latency"]
+
+        if latencies[v] > track.delay_budget:
+            return SingleTrackSolution.not_found()
+
+    return SingleTrackSolution.found(cost, list(mst_from_publisher.edges))
+
+def multi_to_single_track_adapter_factory(strategy: Callable[[nx.DiGraph, Track], SingleTrackSolution]) -> Callable[[nx.DiGraph, Track], MultiTrackSolution]:
+
+    def multi_to_single_track_adapter(network: nx.DiGraph, tracks: dict[str, Track]) -> MultiTrackSolution:
+        objective = 0.0
+        used_links_per_track = {}
+
+        for track_id, track in tracks.items():
+            track_success, track_objective, used_links = strategy(network, track)
+            if not track_success:
+                return MultiTrackSolution.not_found()
+
+            objective += track_objective
+            used_links_per_track[track_id] = used_links
+
+        return MultiTrackSolution.found(objective, used_links_per_track)
+    
+    return multi_to_single_track_adapter
 
 
 def get_optimal_topology_for_multiple_tracks(network: nx.DiGraph, tracks: dict[str, Track]) -> MultiTrackSolution:
@@ -197,7 +325,7 @@ def get_optimal_topology_for_multiple_tracks(network: nx.DiGraph, tracks: dict[s
 
 def get_multi_track_optimizer(type: str) -> Callable[[nx.DiGraph, dict[str, Track], bool], MultiTrackSolution]:
     if type == "single":
-        return multi_to_single_track_adapter
+        return multi_to_single_track_adapter_factory(get_optimal_topology_for_a_single_track)
     elif type == "multiple":
         return get_optimal_topology_for_multiple_tracks
     else:

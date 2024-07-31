@@ -100,8 +100,8 @@ if __name__ == "__main__":
     parser = ArgumentParser(
         description="MoQ Relay Topology Optimization")
     parser.add_argument("--traffic-type",
-                        choices=["live", "video-conference"], default="video-conference", help="Type of traffic to generate")
-    parser.add_argument("--peers", nargs="+", default=["us-west-1", "us-west-2", "us-east-1", "eu-central-1", "eu-south-1"],
+                        choices=["live", "video-conference"], default="live", help="Type of traffic to generate")
+    parser.add_argument("--peers", nargs="+", default=["us-west-1", "us-west-2", "us-east-1", "eu-central-1", "eu-south-1", "eu-west-1", "eu-west-2", "eu-west-3"],
                         help="Peers to generate traffic for")
     parser.add_argument("--use-cache",
                         action="store_true", default=False, help="Cache the results (using the input data as a key)")
