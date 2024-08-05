@@ -26,23 +26,6 @@ class SingleTrackSolution:
         return SingleTrackSolution(False, 0.0, [])
 
 
-class MultiTrackSolution:
-    def __init__(self, success: bool, objective: float, used_links_per_track: dict[str, list[tuple[str, str]]]):
-        self.success = success
-        self.objective = objective
-        self.used_links_per_track = used_links_per_track
-
-    def __iter__(self):
-        yield from (self.success, self.objective, self.used_links_per_track)
-
-    @staticmethod
-    def found(objective: float, used_links_per_track: dict[str, list[tuple[str, str]]]) -> 'MultiTrackSolution':
-        return MultiTrackSolution(True, objective, used_links_per_track)
-
-    @staticmethod
-    def not_found() -> 'MultiTrackSolution':
-        return MultiTrackSolution(False, 0.0, {})
-
 # Spectrum::LeftMost - Keeping the delay constraints
 def direct_link_tree(graph: nx.Graph, track: Track) -> SingleTrackSolution:
     cost = 0.0
@@ -75,20 +58,25 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
 
         best_edge = min(
             filter(
-                lambda edge: edge[1] in tree.nodes and latencies[edge[1]] +
-                graph.get_edge_data(*edge)["latency"] <= track.delay_budget,
-                graph.edges(node)
+                lambda edge, node=node:
+                    edge[0] in tree.nodes and
+                    edge[1] == node and
+                    latencies[edge[0]] +
+                    graph.get_edge_data(
+                        *edge
+                    )["latency"] <= track.delay_budget,
+                graph.edges
             ),
             key=lambda edge: (graph.get_edge_data(
                 *edge)["cost"], graph.get_edge_data(*edge)["latency"]),
             default=None
         )
 
-        # Didn"t find any suitable edge (i.e., not even the direct link to the publisher would work)
+        # Didn't find any suitable edge (i.e., not even the direct link to the publisher would work)
         if best_edge is None:
             return SingleTrackSolution.not_found()
 
-        connection_node = best_edge[1]
+        connection_node = best_edge[0]
 
         # See if we can improve one of our existing connections by redirecting traffic through the new node
 
@@ -96,14 +84,10 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
                                  "new_edge", "old_edge", "subtree", "delay_balance", "cost_balance"])
         best_replacement = Replacement(None, None, [], 0.0, math.inf)
 
-        loop_causing_nodes = {track.publisher} | set(
-            nx.predecessor(graph, connection_node))
+        loop_causing_nodes = {node} | set(nx.shortest_path(tree, track.publisher, connection_node))
 
-        for tree_node in tree.nodes:
-            if tree_node in loop_causing_nodes:
-                continue
-
-            previous_node = next(iter(nx.predecessor(tree, tree_node)))
+        for tree_node in set(tree.nodes) - loop_causing_nodes:
+            previous_node = nx.shortest_path(tree, track.publisher, tree_node)[-2]
 
             to_be_replaced_edge = (previous_node, tree_node)
             replacement_edge = (node, tree_node)
@@ -114,7 +98,7 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
                 *replacement_edge)["cost"] - graph.get_edge_data(*to_be_replaced_edge)["cost"]
 
             # If the delay budget could not be met by redirecting the traffic, continue
-            subtree = [v for _, v in nx.bfs_edges(graph, tree_node)]
+            subtree = [v for _, v in nx.bfs_edges(tree, tree_node)]
             if not all(latencies[v] + delay_balance for v in subtree):
                 continue
 
@@ -229,6 +213,25 @@ def minimum_spanning_tree(graph: nx.DiGraph, track: Track) -> SingleTrackSolutio
 
     return SingleTrackSolution.found(cost, list(mst_from_publisher.edges))
 
+
+class MultiTrackSolution:
+    def __init__(self, success: bool, objective: float, used_links_per_track: dict[str, list[tuple[str, str]]]):
+        self.success = success
+        self.objective = objective
+        self.used_links_per_track = used_links_per_track
+
+    def __iter__(self):
+        yield from (self.success, self.objective, self.used_links_per_track)
+
+    @staticmethod
+    def found(objective: float, used_links_per_track: dict[str, list[tuple[str, str]]]) -> 'MultiTrackSolution':
+        return MultiTrackSolution(True, objective, used_links_per_track)
+
+    @staticmethod
+    def not_found() -> 'MultiTrackSolution':
+        return MultiTrackSolution(False, 0.0, {})
+
+
 def multi_to_single_track_adapter_factory(strategy: Callable[[nx.DiGraph, Track], SingleTrackSolution]) -> Callable[[nx.DiGraph, Track], MultiTrackSolution]:
 
     def multi_to_single_track_adapter(network: nx.DiGraph, tracks: dict[str, Track]) -> MultiTrackSolution:
@@ -236,7 +239,8 @@ def multi_to_single_track_adapter_factory(strategy: Callable[[nx.DiGraph, Track]
         used_links_per_track = {}
 
         for track_id, track in tracks.items():
-            track_success, track_objective, used_links = strategy(network, track)
+            track_success, track_objective, used_links = strategy(
+                network, track)
             if not track_success:
                 return MultiTrackSolution.not_found()
 
@@ -244,7 +248,7 @@ def multi_to_single_track_adapter_factory(strategy: Callable[[nx.DiGraph, Track]
             used_links_per_track[track_id] = used_links
 
         return MultiTrackSolution.found(objective, used_links_per_track)
-    
+
     return multi_to_single_track_adapter
 
 
