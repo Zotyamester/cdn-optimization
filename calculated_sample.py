@@ -1,3 +1,4 @@
+from itertools import chain
 import math
 from typing import Callable
 import geopy.distance
@@ -69,36 +70,44 @@ def load_underlay_network(base_graph_path: str,
     return graph
 
 
-def create_overlay_network(underlay_network: nx.DiGraph, cdn_nodes: list[tuple[str, dict]]) -> nx.DiGraph:
-    overlay_network = nx.DiGraph()
-
-    overlay_network.add_nodes_from(cdn_nodes)
+def physical_to_virtual(underlay_network: nx.DiGraph, cdn_nodes: list[tuple[str, dict]]) -> dict[tuple[str, str], list[tuple[str, str]]]:
+    mapping = {}
 
     # O(n) * (O((n + m) * log n) + O(n)) ~ O(n^2 + n * (n + m) * log n)
     for vir_node1, _ in cdn_nodes:
         # O((n + m) * log n)
         shortest_paths = nx.shortest_path(underlay_network, vir_node1, weight="cost")
 
-        # O(n)
+        # O(n) * TODO
         for vir_node2, _ in cdn_nodes:
             if vir_node1 == vir_node2:
                 continue
-
             edge = (vir_node1, vir_node2)
             path = shortest_paths[vir_node2]
+            edge_path = [(phy_node1, phy_node2) for phy_node1, phy_node2 in zip(path, path[1:])]
+            mapping[edge] = edge_path
 
-            latency, cost = 0.0, 0.0
-            for phy_node1, phy_node2 in zip(path, path[1:]):
-                data = underlay_network.get_edge_data(phy_node1, phy_node2)
-                latency += data["latency"]
-                cost += data["cost"]
+    return mapping
 
-            overlay_network.add_edge(*edge, latency=latency, cost=cost)
+
+def create_overlay_network(underlay_network: nx.DiGraph, cdn_nodes: list[tuple[str, dict]], mapping: dict[tuple[str, str], list[tuple[str, str]]]) -> nx.DiGraph:
+    overlay_network = nx.DiGraph()
+    overlay_network.add_nodes_from(cdn_nodes)
+
+    for edge, edge_path in mapping.items():
+        latency, cost = 0.0, 0.0
+
+        for (phy_node1, phy_node2) in edge_path:
+            data = underlay_network.get_edge_data(phy_node1, phy_node2)
+            latency += data["latency"]
+            cost += data["cost"]
+
+        overlay_network.add_edge(*edge, latency=latency, cost=cost)
     
     return overlay_network
 
 
-def basemap_plot_network(network: nx.Graph, cdn_nodes: list[tuple[str, dict]]):
+def basemap_plot_network(network: nx.Graph, logical_links: set[tuple[str, str]], physical_links: set[tuple[str, str]]):
     min_lon = 90
     max_lon = -90
     min_lat = 180
@@ -138,7 +147,13 @@ def basemap_plot_network(network: nx.Graph, cdn_nodes: list[tuple[str, dict]]):
         x1, y1 = m(lon1, lat1)
         x2, y2 = m(lon2, lat2)
 
-        plt.plot([x1, x2], [y1, y2], color="black", linewidth=0.1)
+        link = (node1, node2)
+        if link in logical_links:
+            plt.plot([x1, x2], [y1, y2], color="red", linewidth=0.3)
+        elif link in physical_links:
+            plt.plot([x1, x2], [y1, y2], color="orange", linewidth=0.2)
+        else:
+            plt.plot([x1, x2], [y1, y2], color="black", linewidth=0.1)
 
     # Plot nodes
     for node, (lon, lat) in node_positions.items():
@@ -151,9 +166,19 @@ def basemap_plot_network(network: nx.Graph, cdn_nodes: list[tuple[str, dict]]):
     plt.savefig("./plots/plot.png")
     plt.close()
 
+underlay_network = load_underlay_network("./datasource/Cogentco.graphml", cdn_nodes)
+mapping = physical_to_virtual(underlay_network, cdn_nodes)
+overlay_network = create_overlay_network(underlay_network, cdn_nodes, mapping)
 
-network = create_overlay_network(load_underlay_network("./datasource/Cogentco.graphml", cdn_nodes), cdn_nodes)
+# To remain compatible with the other samples provided.
+network = overlay_network
 
 if __name__ == "__main__":
-    # basemap_plot_network(network, cdn_nodes)
     display_triangle_inequality_satisfaction(network)
+
+    # Special visualization for the underlay-overlay network:
+    # -------------------------------------------------------------------
+    # united_network = nx.compose(underlay_network, overlay_network)
+    # logical_links = set(mapping.keys())
+    # physical_links = set(chain.from_iterable(mapping.values()))
+    # basemap_plot_network(united_network, logical_links, physical_links)
