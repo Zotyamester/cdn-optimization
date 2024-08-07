@@ -19,10 +19,40 @@ def default_calculate_latency(g: nx.DiGraph, node1: str, node2: str) -> float:
 
 
 def default_calculate_cost(g: nx.DiGraph, node1: str, node2: str) -> float:
-    egress_cost_of_sender = g.nodes[node1]["egress_cost"]
-    ingress_cost_of_receiver = g.nodes[node2]["ingress_cost"]
+    return 1.0
 
-    return egress_cost_of_sender + ingress_cost_of_receiver
+
+def load_graphml(graph_path: str,
+                 calculate_latency: Callable[[nx.DiGraph, str, str], float] = default_calculate_latency,
+                 calculate_cost: Callable[[nx.DiGraph, str, str], float] = default_calculate_cost) -> nx.DiGraph:
+    mapped_graph = nx.DiGraph()
+
+    graph: nx.Graph = nx.read_graphml(graph_path)
+
+    # Add the nodes from the base graph.
+    for node, data in graph.nodes(data=True):
+        if "Longitude" in data and "Latitude" in data:
+            location = (data["Latitude"], data["Longitude"])
+            mapped_graph.add_node(node, location=location)
+
+    # Add the edges from the base graph.
+    for node1, node2 in graph.edges(data=False):
+        if node1 in mapped_graph.nodes and node2 in mapped_graph.nodes:
+            forward_edge = (node1, node2)
+            mapped_graph.add_edge(
+                *forward_edge,
+                latency=calculate_latency(mapped_graph, *forward_edge),
+                cost=calculate_cost(mapped_graph, *forward_edge)
+            )
+
+            reverse_edge = (node2, node1)
+            mapped_graph.add_edge(
+                *reverse_edge,
+                latency=calculate_latency(mapped_graph, *reverse_edge),
+                cost=calculate_cost(mapped_graph, *reverse_edge)
+            )
+    
+    return mapped_graph
 
 
 def create_graph(nodes: list[tuple[str, dict]],
@@ -95,3 +125,34 @@ def display_tracks_stats(tracks: dict[str, Track]):
     for track_id, (name, publisher, subscribers) in tracks.items():
         print(f"\t{track_id} ({name}): {
               publisher} -> [{', '.join(subscribers)}]")
+
+
+def display_triangle_inequality_satisfaction(network: nx.DiGraph):
+    triangle_inequality_satisfied = 0
+
+    for start_node in network.nodes:
+        for end_node in network.nodes:
+            if end_node == start_node:
+                continue
+
+            for intermediate_node in network.nodes:
+                if intermediate_node == start_node or intermediate_node == end_node:
+                    continue
+
+                cost1 = default_calculate_cost(
+                    network, start_node, intermediate_node)
+                cost2 = default_calculate_cost(
+                    network, intermediate_node, end_node)
+                cost_direct = default_calculate_cost(
+                    network, start_node, end_node)
+
+                print(f"{start_node} -> {intermediate_node} -> {end_node}")
+                if cost1 + cost2 >= cost_direct:
+                    print("\tOK")
+                    triangle_inequality_satisfied += 1
+                else:
+                    print("\nFAIL")
+
+    n = len(network.nodes)
+    total = n * (n - 1) * (n - 2)  # n choose 3 * 3! => variation
+    print(f"{triangle_inequality_satisfied} / {total} satisfied.")
