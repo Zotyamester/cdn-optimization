@@ -1,5 +1,5 @@
-from itertools import chain
 import math
+from pathlib import Path
 from typing import Callable
 import geopy.distance
 import matplotlib.pyplot as plt
@@ -40,8 +40,13 @@ def load_underlay_network(base_graph_path: str,
                           calculate_cost: Callable[[nx.DiGraph, str, str], float] = default_calculate_cost) -> nx.DiGraph:
     graph = nx.DiGraph()
     
-    # Add the base graph.
+    # Load base graph.
     base_graph = load_graphml(base_graph_path, calculate_latency, calculate_cost)
+    # Prefix node names with base filename (without extension).
+    common_node_name_prefix = Path(base_graph_path).stem.lower() + "_"
+    nx.relabel_nodes(base_graph, {node: common_node_name_prefix + node for node in base_graph.nodes}, False)
+
+    # Add nodes and edges from the base graph.
     graph.add_nodes_from(base_graph.nodes(data=True))
     graph.add_edges_from(base_graph.edges(data=True))
 
