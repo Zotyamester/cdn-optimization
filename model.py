@@ -90,17 +90,32 @@ class Track:
         self.delay_budget = delay_budget
         self.recreate_streams()
 
+    def add_subscriber(self, subscriber: str, stream_id: str | None = None):
+        self.subscribers.append(subscriber)
+
+        if stream_id is None:
+            stream_id = f"f{max(map(lambda sid: int(sid[1:]), self.streams.keys()), default=0) + 1}"
+        self.streams[stream_id] = defaultdict(
+            lambda: 0,
+            {
+                self.publisher: -1,
+                subscriber: 1
+            }
+        )
+
+    def remove_subscriber(self, subscriber: str):
+        self.subscribers.remove(subscriber)
+        self.streams = {
+            stream_id: stream
+            for stream_id, stream in self.streams.items()
+            if subscriber not in stream
+        }
+
     def recreate_streams(self):
         self.streams = {}
         for i, subscriber in enumerate(self.subscribers, start=1):
             stream_id = f"f{i}"
-            self.streams[stream_id] = defaultdict(
-                lambda: 0,
-                {
-                    self.publisher: -1,
-                    subscriber: 1
-                }
-            )
+            self.add_subscriber(subscriber, stream_id)
 
     def __iter__(self):
         yield from (self.name, self.publisher, self.subscribers)

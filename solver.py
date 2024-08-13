@@ -1,4 +1,5 @@
 from collections import namedtuple
+from enum import Enum
 import math
 from typing import Callable
 
@@ -214,6 +215,26 @@ def minimum_spanning_tree(graph: nx.DiGraph, track: Track) -> SingleTrackSolutio
     return SingleTrackSolution.found(cost, list(mst_from_publisher.edges))
 
 
+class SingleTrackOptimizer(str, Enum):
+    DIRECT_LINK_TREE = "direct_link_tree"
+    MULTICAST_HEURISTIC = "multicast_heuristic"
+    INTEGER_LINEAR_PROGRAMMING = "integer_linear_programming"
+    MINIMUM_SPANNING_TREE = "minimum_spanning_tree"
+
+
+def get_single_track_optimizer(type: SingleTrackOptimizer) -> Callable[[nx.DiGraph, Track], SingleTrackSolution]:
+    if type == SingleTrackOptimizer.DIRECT_LINK_TREE:
+        return direct_link_tree
+    elif type == SingleTrackOptimizer.MULTICAST_HEURISTIC:
+        return multicast_heuristic
+    elif type == SingleTrackOptimizer.INTEGER_LINEAR_PROGRAMMING:
+        return get_optimal_topology_for_a_single_track
+    elif type == SingleTrackOptimizer.MINIMUM_SPANNING_TREE:
+        return minimum_spanning_tree
+    else:
+        raise ValueError("Invalid optimizer type.")
+
+
 class MultiTrackSolution:
     def __init__(self, success: bool, objective: float, used_links_per_track: dict[str, list[tuple[str, str]]]):
         self.success = success
@@ -230,26 +251,6 @@ class MultiTrackSolution:
     @staticmethod
     def not_found() -> 'MultiTrackSolution':
         return MultiTrackSolution(False, 0.0, {})
-
-
-def multi_to_single_track_adapter_factory(strategy: Callable[[nx.DiGraph, Track], SingleTrackSolution]) -> Callable[[nx.DiGraph, Track], MultiTrackSolution]:
-
-    def multi_to_single_track_adapter(network: nx.DiGraph, tracks: dict[str, Track]) -> MultiTrackSolution:
-        objective = 0.0
-        used_links_per_track = {}
-
-        for track_id, track in tracks.items():
-            track_success, track_objective, used_links = strategy(
-                network, track)
-            if not track_success:
-                return MultiTrackSolution.not_found()
-
-            objective += track_objective
-            used_links_per_track[track_id] = used_links
-
-        return MultiTrackSolution.found(objective, used_links_per_track)
-
-    return multi_to_single_track_adapter
 
 
 def get_optimal_topology_for_multiple_tracks(network: nx.DiGraph, tracks: dict[str, Track]) -> MultiTrackSolution:
@@ -327,10 +328,38 @@ def get_optimal_topology_for_multiple_tracks(network: nx.DiGraph, tracks: dict[s
     return MultiTrackSolution.found(objective, used_links_per_track)
 
 
-def get_multi_track_optimizer(type: str) -> Callable[[nx.DiGraph, dict[str, Track], bool], MultiTrackSolution]:
-    if type == "single":
-        return multi_to_single_track_adapter_factory(get_optimal_topology_for_a_single_track)
-    elif type == "multiple":
+def multi_to_single_track_adapter_factory(strategy: Callable[[nx.DiGraph, Track], SingleTrackSolution]) -> Callable[[nx.DiGraph, Track], MultiTrackSolution]:
+
+    def multi_to_single_track_adapter(network: nx.DiGraph, tracks: dict[str, Track]) -> MultiTrackSolution:
+        objective = 0.0
+        used_links_per_track = {}
+
+        for track_id, track in tracks.items():
+            track_success, track_objective, used_links = strategy(
+                network, track)
+            if not track_success:
+                return MultiTrackSolution.not_found()
+
+            objective += track_objective
+            used_links_per_track[track_id] = used_links
+
+        return MultiTrackSolution.found(objective, used_links_per_track)
+
+    return multi_to_single_track_adapter
+
+
+class MultiTrackOptimizer(str, Enum):
+    NATIVE = "multiple"
+    ADAPTED = "adapted"
+
+
+def get_multi_track_optimizer(type: str, **kwargs) -> Callable[[nx.DiGraph, dict[str, Track], bool], MultiTrackSolution]:
+    if type == MultiTrackOptimizer.ADAPTED:
+        single_track_optimizer = kwargs.get("single_track_optimizer")
+        if single_track_optimizer is None:
+            raise ValueError("Single track optimizer must be provided for adapted optimization.")
+        return multi_to_single_track_adapter_factory(single_track_optimizer)
+    elif type == MultiTrackOptimizer.NATIVE:
         return get_optimal_topology_for_multiple_tracks
     else:
         raise ValueError("Invalid optimizer type.")

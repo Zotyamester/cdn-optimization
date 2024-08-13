@@ -1,0 +1,74 @@
+from typing import Annotated
+from fastapi import FastAPI, Body, HTTPException, Query, status
+from pydantic import BaseModel
+from gcp_sample import network
+from model import Track
+from solver import SingleTrackOptimizer, get_optimal_topology_for_a_single_track, get_single_track_optimizer  # This is a static network. TODO: Make it dynamic, use a database.
+tracks = {}  # This will be our in-memory database. TODO: Use a real database
+used_links_per_track = {} # This will be our in-memory cache. TODO: Use a real database
+
+app = FastAPI()
+
+
+class TrackDTO(BaseModel):
+    name: str
+    publisher: str
+    delay_budget: float
+
+
+def get_track_id(track_namespace: str, track_name: str) -> str:
+    return f"{track_namespace}:{track_name}"
+
+
+@app.get("/tracks", status_code=status.HTTP_200_OK)
+async def get_tracks() -> list[TrackDTO]:
+    return list(map(lambda track: TrackDTO(track.name, track.publisher, track.delay_budget), tracks.values()))
+
+
+@app.post("/tracks/{track_namespace}/{track_name}", status_code=status.HTTP_201_CREATED)
+async def create_track(track_namespace: str, track_name: str, track_dto: Annotated[TrackDTO, Body()]) -> TrackDTO | None:
+    track_id = get_track_id(track_namespace, track_name)
+    track = Track(track_dto.name, track_dto.publisher, [], track_dto.delay_budget)
+    tracks[track_id] = track
+    return track_dto
+
+
+@app.get("/tracks/{track_namespace}/{track_name}", status_code=status.HTTP_200_OK)
+async def get_track(track_namespace: str, track_name: str) -> TrackDTO:
+    track_id = get_track_id(track_namespace, track_name)
+    track = tracks.get(track_id, None)
+    if track == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Track not found")
+    return TrackDTO(track.name, track.publisher, track.delay_budget)
+
+
+@app.post("/tracks/{track_namespace}/{track_name}/subscribe", status_code=status.HTTP_200_OK)
+async def subscribe_to_track(track_namespace: str, track_name: str, subscriber: Annotated[str, Body()], optimizer_type: Annotated[SingleTrackOptimizer | None, Query()] = None) -> str:
+    track_id = get_track_id(track_namespace, track_name)
+    track = tracks.get(track_id, None)
+    if track is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Track not found")
+    
+    track.add_subscriber(subscriber)
+
+    if optimizer_type is None:
+        optimizer_type = SingleTrackOptimizer.INTEGER_LINEAR_PROGRAMMING
+    
+    optimizer = get_single_track_optimizer(optimizer_type)
+
+    solution = optimizer(network, track)
+    if not solution.success:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Optimization failed")
+    
+    used_links_per_track[track_id] = solution.used_links
+    next_hop = next(map(lambda edge: edge[0], filter(lambda edge, subscriber=subscriber: edge[1] == subscriber, solution.used_links)), None)
+    if next_hop == None:
+        raise HTTPException(status_code=status.HTTP_204_NO_CONTENT, detail="Next hop cannot be determined")
+    
+    return next_hop
+
+
+@app.post("/tracks/{track_namespace}/{track_name}/unsubscribe", status_code=status.HTTP_200_OK)
+async def unsubscribe_to_track(track_namespace: str, track_name: str, subscriber: Annotated[str, Body()]):
+    track_id = get_track_id(track_namespace, track_name)
+    tracks[track_id].remove_subscriber(subscriber)

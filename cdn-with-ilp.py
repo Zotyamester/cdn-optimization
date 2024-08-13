@@ -9,7 +9,7 @@ import networkx as nx
 from model import Track, display_network_links, display_tracks_stats
 from plot import get_plotter
 from sample import network
-from solver import get_multi_track_optimizer
+from solver import MultiTrackOptimizer, SingleTrackOptimizer, get_multi_track_optimizer, get_single_track_optimizer
 from traffic import (generate_live_video_traffic,
                      generate_video_conference_traffic)
 
@@ -43,7 +43,7 @@ def write_to_cache(input_model_hash: str, used_links_per_track: dict[str, list[t
         json.dump(used_links_per_track, f)
 
 
-def get_optimal_topology(network: nx.DiGraph, tracks: dict[str, Track], solver_type: str, use_cache: bool = False, debug: bool = False) -> dict[str, list[tuple[str, str]]]:
+def get_optimal_topology(network: nx.DiGraph, tracks: dict[str, Track], use_cache: bool = False, debug: bool = False) -> dict[str, list[tuple[str, str]]]:
     input_model_hash = hash_input_model(network, tracks)
 
     if use_cache and is_cached(input_model_hash):
@@ -60,7 +60,8 @@ def get_optimal_topology(network: nx.DiGraph, tracks: dict[str, Track], solver_t
         if debug:
             print("Computing...")
 
-        multi_track_optimizer = get_multi_track_optimizer(solver_type)
+        single_track_optimizer = get_single_track_optimizer(SingleTrackOptimizer.INTEGER_LINEAR_PROGRAMMING)
+        multi_track_optimizer = get_multi_track_optimizer(MultiTrackOptimizer.ADAPTED, single_track_optimizer=single_track_optimizer)
 
         success, objective, used_links_per_track = multi_track_optimizer(
             network, tracks)
@@ -105,10 +106,6 @@ if __name__ == "__main__":
                         help="Peers to generate traffic for")
     parser.add_argument("--use-cache",
                         action="store_true", default=False, help="Cache the results (using the input data as a key)")
-    parser.add_argument("--use-reduced-network", action="store_true", default=False,
-                        help="Reduce the computing space by ignoring nodes that are neither publishers nor subscribers")
-    parser.add_argument("--solver",
-                        choices=["single", "multiple"], default="single", help="Solver to use")
     parser.add_argument("--debug",
                         action="store_true", default=True, help="Debug mode")
     parser.add_argument("--plotter",
@@ -117,10 +114,6 @@ if __name__ == "__main__":
                         help="Name of the plot file (without extension)")
     args = parser.parse_args()
 
-    if args.use_reduced_network:
-        raise NotImplementedError(
-            "Reducing the network is not yet implemented")
-
     tracks = generate_sample_traffic(args.traffic_type, args.peers)
 
     if args.debug:
@@ -128,8 +121,7 @@ if __name__ == "__main__":
         display_tracks_stats(tracks)
 
     start = time.time()
-    used_links_per_track = get_optimal_topology(
-        network, tracks, args.solver, args.use_cache, args.debug)
+    used_links_per_track = get_optimal_topology(network, tracks, args.use_cache, args.debug)
     end = time.time()
 
     delta = end - start
