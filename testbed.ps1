@@ -1,4 +1,0 @@
-python cdn-with-ilp.py --traffic-type video-conference --peers eu-west-1 eu-west-2 us-west-1 us-west-2 us-east-1 eu-south-1 --solver single --debug --plot-name video-conf-single-normal > video-conf-single-normal.txt
-python cdn-with-ilp.py --traffic-type video-conference --peers eu-west-1 eu-west-2 us-west-1 us-west-2 us-east-1 eu-south-1 --solver multiple --debug --plot-name video-conf-multiple-normal > video-conf-multiple-normal.txt
-python cdn-with-ilp.py --traffic-type video-conference --peers eu-west-1 eu-west-2 us-west-1 us-west-2 us-east-1 eu-south-1 --use-reduced-network --solver single --debug --plot-name video-conf-single-reduced > video-conf-single-reduced.txt
-python cdn-with-ilp.py --traffic-type video-conference --peers eu-west-1 eu-west-2 us-west-1 us-west-2 us-east-1 eu-south-1 --use-reduced-network --solver multiple --debug --plot-name video-conf-multiple-reduced > video-conf-multiple-reduced.txt
