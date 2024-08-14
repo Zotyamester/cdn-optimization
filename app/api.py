@@ -39,8 +39,16 @@ async def get_track(track_namespace: str, track_name: str) -> TrackDTO:
     track = tracks.get(track_id, None)
     if track == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Track not found")
-    return TrackDTO(track.name, track.publisher, track.delay_budget)
+    return TrackDTO(name=track.name, publisher=track.publisher, delay_budget=track.delay_budget)
 
+
+@app.get("/tracks/{track_namespace}/{track_name}/topology", status_code=status.HTTP_200_OK)
+async def get_topology_for_track(track_namespace: str, track_name: str) -> list:
+    track_id = get_track_id(track_namespace, track_name)
+    used_links = used_links_per_track.get(track_id, None)
+    if used_links is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Track not found")
+    return used_links
 
 @app.post("/tracks/{track_namespace}/{track_name}/subscribe", status_code=status.HTTP_200_OK)
 async def subscribe_to_track(track_namespace: str, track_name: str, subscriber: Annotated[str, Body()], optimizer_type: Annotated[SingleTrackOptimizer | None, Query()] = None) -> str:
