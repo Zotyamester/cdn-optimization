@@ -2,6 +2,10 @@
 
 Experiments with Media over QUIC relay topology optimization.
 
+## Development
+
+For development, it's useful to just simply link the required .env to the sample environment file provided: `ln -s example.env .env`
+
 ## Run
 
 Note that the [requirements.txt](requirements.txt) and this [section](#run) only considers the running of the API and its testbed.

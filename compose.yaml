@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:16.4
+    networks:
+      - internal
+    ports:
+       - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ./data:/var/lib/postgres/data
+
+  api:
+    image: zoltan120/cdn-optimization
+    build: .
+    networks:
+      - internal
+    ports:
+      - 80:80
+    environment:
+      - DB_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      - db
+
+networks:
+  internal:

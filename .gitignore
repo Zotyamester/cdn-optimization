@@ -135,5 +135,6 @@ shell/jina-wizard.sh
 .idea
 
 # Custom
+.env
 cache/
 plots/

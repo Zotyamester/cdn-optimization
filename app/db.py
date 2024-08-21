@@ -1,5 +1,6 @@
 from functools import reduce
-from sqlmodel import Field, Relationship, Session, SQLModel, create_engine, select
+import os
+from sqlmodel import Field, Relationship, Session, SQLModel, create_engine, select, delete
 from gcp_sample import network as model
 
 
@@ -69,15 +70,24 @@ class Track(SQLModel, table=True):
         back_populates="tracks", link_model=Subscription)
 
 
-sqlite_url = "sqlite://"
-engine = create_engine(sqlite_url, echo=False)
+DB_USER = os.environ.get("DB_USER", "postgres")
+DB_HOST = os.environ.get("DB_HOST", "db")
+DB_PASSWORD = os.environ.get("DB_PASSWORD")
+DB_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}"
+
+engine = create_engine(DB_URL, echo=False)
 
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
 
 
-def create_data_from_network():
+def delete_db_data():
+    with Session(engine) as session:
+        session.exec(delete(Network))
+
+
+def create_db_data_from_network():
     with Session(engine) as session:
         network = Network(
             name="test-network",
@@ -120,7 +130,8 @@ def dump_network():
 
 def main():
     create_db_and_tables()
-    create_data_from_network()
+    delete_db_data()
+    create_db_data_from_network()
     dump_network()
 
 
