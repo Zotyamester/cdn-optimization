@@ -24,6 +24,12 @@ class Subscription(SQLModel, table=True):
     track_id: int = Field(foreign_key="track.id",
                           primary_key=True, ondelete="CASCADE")
 
+
+class LinkUsage(SQLModel, table=True):
+    track_id: int = Field(primary_key=True, foreign_key="track.id", ondelete="CASCADE")
+    edge_id: int = Field(primary_key=True, foreign_key="edge.id", ondelete="CASCADE")
+
+
 class Node(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     network_id: int = Field(foreign_key="network.id", ondelete="CASCADE")
@@ -41,6 +47,7 @@ class Node(SQLModel, table=True):
 
     tracks: list["Track"] = Relationship(
         back_populates="subscribers", link_model=Subscription)
+    published_tracks: list["Track"] = Relationship(back_populates="publisher")
 
 
 class Edge(SQLModel, table=True):
@@ -55,19 +62,30 @@ class Edge(SQLModel, table=True):
         foreign_keys="[Edge.src_node_id]"))
     dst_node: Node = Relationship(back_populates="in_edges", sa_relationship_kwargs=dict(
         foreign_keys="[Edge.dst_node_id]"))
-    
+
+    active_tracks: list["Track"] = Relationship(
+        back_populates="used_links", link_model=LinkUsage)
+
     def __iter__(self):
         yield from (self.src_node_id, self.dst_node_id, self.latency, self.cost)
 
 
 class Track(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(index=True)
-    publisher: int = Field(foreign_key="node.id", ondelete="CASCADE")
+
+    # Idiomatic name for the track.
+    name: str = Field(unique=True, nullable=False, index=True, min_length=1)
+    # Publisher node.
+    publisher_id: int = Field(foreign_key="node.id", ondelete="CASCADE")
+    # Delay bound for the track's content.
     delay_bound: float = Field(ge=0.0)
 
+    publisher: Node = Relationship(back_populates="published_tracks")
     subscribers: list["Node"] = Relationship(
         back_populates="tracks", link_model=Subscription)
+
+    used_links: list["Edge"] = Relationship(
+        back_populates="active_tracks", link_model=LinkUsage)
 
 
 DB_USER = os.environ.get("DB_USER", "postgres")

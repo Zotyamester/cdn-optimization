@@ -14,8 +14,8 @@ class NodeDTO(BaseModel):
     attributes: dict
 
 class EdgeDTO(BaseModel):
-    node1: str
-    node2: str
+    src: str
+    dst: str
     attributes: dict
 
 class NetworkDTO(BaseModel):
@@ -35,7 +35,7 @@ def get_track_id(track_namespace: str, track_name: str) -> str:
 @app.get("/network", status_code=status.HTTP_200_OK)
 async def get_network() -> NetworkDTO:
     nodes = list(map(lambda node_attr: NodeDTO(name=node_attr[0], attributes=node_attr[1]), network.nodes(data=True)))
-    edges = list(map(lambda edge_attr: EdgeDTO(node1=edge_attr[0], node2=edge_attr[1], attributes=edge_attr[2]), network.edges(data=True)))
+    edges = list(map(lambda edge_attr: EdgeDTO(src=edge_attr[0], dst=edge_attr[1], attributes=edge_attr[2]), network.edges(data=True)))
     return NetworkDTO(nodes=nodes, edges=edges)
 
 
