@@ -85,10 +85,14 @@ def create_graph(nodes: list[tuple[str, dict]],
 class Track:
     def __init__(self, name: str, publisher: str, subscribers: list[str], delay_budget: float):
         self.name = name
-        self.publisher = publisher
-        self.subscribers = subscribers
         self.delay_budget = delay_budget
-        self.recreate_streams()
+        self.publisher = publisher
+        
+        self.subscribers = []
+        self.streams = {}
+        for i, subscriber in enumerate(subscribers, start=1):
+            stream_id = f"f{i}"
+            self.add_subscriber(subscriber, stream_id)
 
     def add_subscriber(self, subscriber: str, stream_id: str | None = None):
         self.subscribers.append(subscriber)
@@ -110,12 +114,6 @@ class Track:
             for stream_id, stream in self.streams.items()
             if subscriber not in stream
         }
-
-    def recreate_streams(self):
-        self.streams = {}
-        for i, subscriber in enumerate(self.subscribers, start=1):
-            stream_id = f"f{i}"
-            self.add_subscriber(subscriber, stream_id)
 
     def __iter__(self):
         yield from (self.name, self.publisher, self.subscribers)
