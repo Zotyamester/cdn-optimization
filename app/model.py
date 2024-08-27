@@ -88,14 +88,14 @@ class Track:
         self.delay_budget = delay_budget
         self.publisher = publisher
         
-        self.subscribers = []
+        self.subscribers = set()
         self.streams = {}
         for i, subscriber in enumerate(subscribers, start=1):
             stream_id = f"f{i}"
             self.add_subscriber(subscriber, stream_id)
 
     def add_subscriber(self, subscriber: str, stream_id: str | None = None):
-        self.subscribers.append(subscriber)
+        self.subscribers.add(subscriber)
 
         if stream_id is None:
             stream_id = f"f{max(map(lambda sid: int(sid[1:]), self.streams.keys()), default=0) + 1}"
