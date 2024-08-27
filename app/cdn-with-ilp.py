@@ -21,8 +21,9 @@ COLORS = ["red", "blue", "green", "yellow",
           "purple", "orange", "pink", "brown"]
 
 
-def hash_input_model(network: nx.DiGraph, tracks: dict[str, list[str]]) -> str:
-    base_str = str(network.nodes) + str(network.edges(data=True)) + str(tracks)
+def hash_input_model(network: nx.DiGraph, tracks: dict[str, Track]) -> str:
+    base_str = str(network.nodes(data=True)) + \
+        str(network.edges(data=True)) + str(tracks)
     hash_data = hashlib.sha256(base_str.encode())
     return hash_data.hexdigest()
 
@@ -43,7 +44,10 @@ def write_to_cache(input_model_hash: str, used_links_per_track: dict[str, list[t
         json.dump(used_links_per_track, f)
 
 
-def get_optimal_topology(network: nx.DiGraph, tracks: dict[str, Track], use_cache: bool = False, debug: bool = False) -> dict[str, list[tuple[str, str]]]:
+def get_optimal_topology(network: nx.DiGraph, tracks: dict[str, Track], use_cache: bool = False,
+                         single_track_optimizer_type: SingleTrackOptimizer = SingleTrackOptimizer.INTEGER_LINEAR_PROGRAMMING,
+                         multi_track_optimizer_type: MultiTrackOptimizer = MultiTrackOptimizer.ADAPTED,
+                         debug: bool = False) -> dict[str, list[tuple[str, str]]]:
     input_model_hash = hash_input_model(network, tracks)
 
     if use_cache and is_cached(input_model_hash):
@@ -60,8 +64,8 @@ def get_optimal_topology(network: nx.DiGraph, tracks: dict[str, Track], use_cach
         if debug:
             print("Computing...")
 
-        single_track_optimizer = get_single_track_optimizer(SingleTrackOptimizer.INTEGER_LINEAR_PROGRAMMING)
-        multi_track_optimizer = get_multi_track_optimizer(MultiTrackOptimizer.ADAPTED, single_track_optimizer=single_track_optimizer)
+        single_track_optimizer = get_single_track_optimizer(single_track_optimizer_type)
+        multi_track_optimizer = get_multi_track_optimizer(multi_track_optimizer_type, single_track_optimizer=single_track_optimizer)
 
         success, objective, used_links_per_track = multi_track_optimizer(
             network, tracks)
@@ -106,10 +110,14 @@ if __name__ == "__main__":
                         help="Peers to generate traffic for")
     parser.add_argument("--use-cache",
                         action="store_true", default=False, help="Cache the results (using the input data as a key)")
+    parser.add_argument("--single-track-optimizer",
+                        choices=[opt.name for opt in SingleTrackOptimizer], default=SingleTrackOptimizer.INTEGER_LINEAR_PROGRAMMING.name,
+                        help="Single track optimizer to use (ignored if multi-track optimizer is not set to ADAPTED)")
+    parser.add_argument("--multi-track-optimizer",
+                        choices=[opt.name for opt in MultiTrackOptimizer], default=MultiTrackOptimizer.ADAPTED.name, help="Multi track optimizer to use")
     parser.add_argument("--debug",
                         action="store_true", default=True, help="Debug mode")
-    parser.add_argument("--plotter",
-                        choices=["simple", "basemap"], default="basemap", help="Plotter to use")
+    parser.add_argument("--plotter", choices=["simple", "basemap"], default="basemap", help="Plotter to use")
     parser.add_argument("--plot-name", default="plot",
                         help="Name of the plot file (without extension)")
     args = parser.parse_args()
@@ -121,12 +129,17 @@ if __name__ == "__main__":
         display_tracks_stats(tracks)
 
     start = time.time()
-    used_links_per_track = get_optimal_topology(network, tracks, args.use_cache, args.debug)
+    used_links_per_track = get_optimal_topology(
+        network, tracks, args.use_cache,
+        SingleTrackOptimizer[args.single_track_optimizer],
+        MultiTrackOptimizer[args.multi_track_optimizer],
+        args.debug
+    )
     end = time.time()
 
     delta = end - start
     if args.debug:
-        print(f"Computation time: {delta:.2f} s")
+        print(f"Computation time: {delta:.4f} s")
 
     track_to_color = {track_id: color for track_id,
                       color in zip(tracks.keys(), COLORS)}
