@@ -80,7 +80,7 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
         return path
 
     # O(n) + O(n) * O(n) ≈ O(n) + O(n²) ≈ O(n²)
-    def augment(node, connection_node):
+    def augment(node):
         nonlocal graph, track, latencies, cost, tree
 
         Replacement = namedtuple("Replacement", [
@@ -88,9 +88,8 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
         best_replacement = Replacement(None, None, [], 0.0, math.inf)
 
         assert list(nx.shortest_path(tree, track.publisher,
-                    connection_node)) == reverse_path_to_root(connection_node)
-        loop_causing_nodes = {node} | set(
-            reverse_path_to_root(connection_node))
+                    node)) == reverse_path_to_root(node)
+        loop_causing_nodes = set(reverse_path_to_root(node))
 
         for tree_node in set(tree.nodes) - loop_causing_nodes:
             # This assertion should hold true, since `tree` MUST be a tree graph in any given point in time,
@@ -113,7 +112,8 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
 
             # If the delay budget is met by redirecting the traffic, and the replacement comes with cost reductions.
             if all(latencies[v] + delay_balance for v in subtree) and cost_balance < best_replacement.cost_balance:
-                best_replacement = Replacement(replacement_edge, to_be_replaced_edge, subtree, delay_balance, cost_balance)
+                best_replacement = Replacement(
+                    replacement_edge, to_be_replaced_edge, subtree, delay_balance, cost_balance)
 
         if best_replacement.cost_balance < 0 or (best_replacement.cost_balance == 0 and best_replacement.delay_balance < 0):
             tree.remove_edge(*best_replacement.old_edge)
@@ -147,20 +147,18 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
         if best_edge is None:
             return SingleTrackSolution.not_found()
 
-        connection_node = best_edge[0]
-
-        # See if we can improve one of our existing connections by redirecting traffic through the newly added node
-        augment(node, connection_node)
-
         # Add the edge to the tree and update the cost and latencies
-
+        connection_node = best_edge[0]
         best_cost, best_latency = graph.get_edge_data(
             *best_edge)["cost"], graph.get_edge_data(*best_edge)["latency"]
         tree.add_edge(*best_edge)
         cost += best_cost
         latencies[node] = latencies[connection_node] + best_latency
 
-    # O(n) * O(add_subscriber)
+        # See if we can improve one of our existing connections by redirecting traffic through the newly added node
+        augment(node)
+
+    # O(n) * O(n²) ≈ O(n³)
     for node in track.subscribers:
         add_subscriber(node)
 
@@ -236,7 +234,7 @@ def get_optimal_topology_for_a_single_track(network: nx.DiGraph, track: Track) -
 def minimum_spanning_tree(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
     graph = graph.to_undirected()
     graph.remove_nodes_from(
-        set(graph.nodes) - {track.publisher} - set(track.subscribers))
+        set(graph.nodes) - {track.publisher, *track.subscribers})
 
     mst = nx.minimum_spanning_tree(graph, weight="cost")
     mst_from_publisher = nx.bfs_tree(mst, track.publisher)
