@@ -83,7 +83,9 @@ async def get_topology_for_track(track_namespace: str) -> list:
     return used_links
 
 
-def optimize(network: nx.DiGraph, track: Track, optimizer_type: SingleTrackOptimizer = SingleTrackOptimizer.INTEGER_LINEAR_PROGRAMMING, reduce_network: bool = False) -> SingleTrackSolution:
+def optimize(network: nx.DiGraph, track: Track,
+             optimizer_type: SingleTrackOptimizer = SingleTrackOptimizer.INTEGER_LINEAR_PROGRAMMING,
+             reduce_network: bool = False) -> SingleTrackSolution:
     if reduce_network:
         network = network.copy()
         network.remove_nodes_from(
@@ -92,8 +94,8 @@ def optimize(network: nx.DiGraph, track: Track, optimizer_type: SingleTrackOptim
     return optimizer(network, track)
 
 
-@app.post("/tracks/{track_namespace}/subscribe", status_code=status.HTTP_200_OK)
-async def subscribe_to_track(track_namespace: str, subscriber: Annotated[str, Body()],
+@app.post("/tracks/{track_namespace}/subscription/{subscriber}", status_code=status.HTTP_200_OK)
+async def subscribe_to_track(track_namespace: str, subscriber: str,
                              optimizer_type: Annotated[SingleTrackOptimizer | None, Query(
                              )] = SingleTrackOptimizer.INTEGER_LINEAR_PROGRAMMING,
                              reduce_network: Annotated[bool | None, Query()] = False) -> str:
@@ -122,8 +124,8 @@ async def subscribe_to_track(track_namespace: str, subscriber: Annotated[str, Bo
     return next_hop
 
 
-@app.post("/tracks/{track_namespace}/unsubscribe", status_code=status.HTTP_200_OK)
-async def unsubscribe_to_track(track_namespace: str, subscriber: Annotated[str, Body()]):
+@app.delete("/tracks/{track_namespace}/subscription/{subscriber}", status_code=status.HTTP_204_NO_CONTENT)
+async def unsubscribe_to_track(track_namespace: str, subscriber: str):
     track = tracks.get(track_namespace, None)
     if track is None:
         raise HTTPException(

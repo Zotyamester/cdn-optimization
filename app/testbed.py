@@ -24,7 +24,7 @@ assert response.status_code == 201
 for subscriber in subscribers:
     start = time.time()
     
-    response = requests.post(f"{BASE_URL}/tracks/{track_namespace}/subscribe?optimizer_type={optimizer_type}&reduce_network={reduce_network}", json=subscriber)
+    response = requests.post(f"{BASE_URL}/tracks/{track_namespace}/subscription/{subscriber}?optimizer_type={optimizer_type}&reduce_network={reduce_network}")
     assert response.status_code == 200
     
     end = time.time()
