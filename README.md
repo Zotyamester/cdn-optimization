@@ -2,9 +2,9 @@
 
 Experiments with Media over QUIC relay topology optimization.
 
-## Development
+## Development 
 
-For development, it's useful to just simply link the required .env to the sample environment file provided: `ln -s example.env .env`
+When using Docker Compose for development, it's useful to just simply link the required .env to the sample environment file provided: `ln -s example.env .env`
 
 ## Run
 
@@ -12,7 +12,13 @@ Note that the [requirements.txt](requirements.txt) and this [section](#run) only
 Other utilities such as the plotter may require additional dependencies.
 
 ### Docker (preferred)
+
+Either build the container for yourself...
  * Build the image: `docker build -t cdn-optimization .`
+Or run the latest published version from [Docker Hub](https://hub.docker.com/r/zoltan120/cdn-optimization)...
+ * Pull the image: `docker pull zoltan120/cdn-optimization`
+
+After acquiring an image, run a container instance of it:
  * Run a container: `docker run --name cdn-api --rm -p 80:80 cdn-optimization`
 
 ### Locally
@@ -21,4 +27,4 @@ Other utilities such as the plotter may require additional dependencies.
    * Depending on the platform you're using, you might want to run: `/bin/activate`/`\Scripts\activate.bat`/`\Scripts\Activate.ps1`
    * You can deactivate it later by running the command: `deactivate`
  * Install dependencies: `pip install -r requirements.txt`
- * Run the script: `python -m fastapi dev app/api.py`
+ * Run the script: `python -m fastapi run app/api.py --port 80`
