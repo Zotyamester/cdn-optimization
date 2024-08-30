@@ -1,15 +1,18 @@
+import math
+import networkx as nx
+import random
 from model import Track
 
 
-def generate_full_mesh_traffic(traffic_name: str, peers: list[str], latency: float):
+def generate_full_mesh_traffic(traffic_name: str, peers: list[str], delay_budget: float):
     tracks = {}
     for i, peer in enumerate(peers, start=1):
         other_peers = list(filter(lambda x, peer=peer: x != peer, peers))
         tracks[f"t{i}"] = Track(
             name=f"{traffic_name}-of-{peer}",
             publisher=peer,
-            subscribers=other_peers,
-            delay_budget=latency
+            initial_subscribers=other_peers,
+            delay_budget=delay_budget
         )
     return tracks
 
@@ -18,18 +21,43 @@ def generate_video_conference_traffic(peers: list[str], latency: float = 500):
     return generate_full_mesh_traffic("video", peers, latency)
 
 
-def generate_live_video_traffic(publishers: list[tuple[str, list[str]]], subscribers: list[tuple[str, set[str]]]) -> dict[str, Track]:
-    tracks = {}
-
-    i = 1
-    for publisher, contents in publishers:
-        for content in contents:
-            tracks[f"t{i}"] = Track(
-                name=content,
-                publisher=publisher,
-                subscribers=[subscriber for subscriber, desired_contents in subscribers if content in desired_contents],
-                delay_budget=2000
-            )
-            i += 1
-
+def generate_broadcast_traffic(track_id: str, publisher: str, subscribers: list[str], delay_budget: float = 2000.0) -> dict[str, Track]:
+    tracks = {
+        track_id: Track(
+            publisher=publisher,
+            initial_subscribers=subscribers,
+            delay_budget=delay_budget
+        )
+    }
     return tracks
+
+
+def generate_circle_edge_relays(network: nx.DiGraph, count: int) -> list[tuple[str, dict[str, tuple[float, float]]]]:
+    latitudes = [lat for lat, _ in nx.get_node_attributes(network, "location").values()]
+    longitudes = [lon for _, lon in nx.get_node_attributes(network, "location").values()]
+    bounding_box = (min(latitudes), max(latitudes), min(longitudes), max(longitudes))
+
+    inscribed_circle_radius = min(
+        (bounding_box[1] - bounding_box[0]) / 2,
+        (bounding_box[3] - bounding_box[2]) / 2
+    )
+    inscribed_circle_center = (
+        (bounding_box[0] + bounding_box[1]) / 2,
+        (bounding_box[2] + bounding_box[3]) / 2
+    )
+
+    relays = []
+    
+    for i in range(0, count):
+        angle = 2 * 3.14159 * i / count
+        lat = inscribed_circle_center[0] + inscribed_circle_radius * math.cos(angle)
+        lon = inscribed_circle_center[1] + inscribed_circle_radius * math.sin(angle)
+        relays.append((f"relay{i}", {"location": (lat, lon)}))
+
+    return relays
+
+
+def choose_peers(network: nx.DiGraph, count: int, seed: int | None = None) -> list[str]:
+    if seed is not None:
+        random.seed(seed)
+    return random.sample(list(network.nodes), k=count)

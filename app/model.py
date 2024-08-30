@@ -1,5 +1,6 @@
 import itertools
 from collections import defaultdict
+import random
 from typing import Callable
 
 import geopy.distance
@@ -23,7 +24,8 @@ def default_calculate_cost(g: nx.DiGraph, node1: str, node2: str) -> float:
 
 
 def load_graphml(graph_path: str,
-                 calculate_latency: Callable[[nx.DiGraph, str, str], float] = default_calculate_latency,
+                 calculate_latency: Callable[[
+                     nx.DiGraph, str, str], float] = default_calculate_latency,
                  calculate_cost: Callable[[nx.DiGraph, str, str], float] = default_calculate_cost) -> nx.DiGraph:
     mapped_graph = nx.DiGraph()
 
@@ -51,7 +53,7 @@ def load_graphml(graph_path: str,
                 latency=calculate_latency(mapped_graph, *reverse_edge),
                 cost=calculate_cost(mapped_graph, *reverse_edge)
             )
-    
+
     return mapped_graph
 
 
@@ -63,7 +65,7 @@ def create_graph(nodes: list[tuple[str, dict]],
 
     g.add_nodes_from(nodes)
 
-    # Calculate distance between every pair of cities and add a edge in both directions
+    # Calculate cost and latency between every pair of cities and add a edge in both directions
     for node1, node2 in itertools.combinations(g.nodes, 2):
         forward_edge = (node1, node2)
         g.add_edge(
@@ -83,14 +85,13 @@ def create_graph(nodes: list[tuple[str, dict]],
 
 
 class Track:
-    def __init__(self, name: str, publisher: str, subscribers: list[str], delay_budget: float):
-        self.name = name
+    def __init__(self, publisher: str, initial_subscribers: list[str], delay_budget: float):
         self.delay_budget = delay_budget
         self.publisher = publisher
-        
+
         self.subscribers = set()
-        self.streams = {}
-        for i, subscriber in enumerate(subscribers, start=1):
+        self.streams = dict()
+        for i, subscriber in enumerate(initial_subscribers, start=1):
             stream_id = f"f{i}"
             self.add_subscriber(subscriber, stream_id)
 
@@ -98,7 +99,8 @@ class Track:
         self.subscribers.add(subscriber)
 
         if stream_id is None:
-            stream_id = f"f{max(map(lambda sid: int(sid[1:]), self.streams.keys()), default=0) + 1}"
+            stream_id = f"f{
+                max(map(lambda sid: int(sid[1:]), self.streams.keys()), default=0) + 1}"
         self.streams[stream_id] = defaultdict(
             lambda: 0,
             {
@@ -116,10 +118,10 @@ class Track:
         }
 
     def __iter__(self):
-        yield from (self.name, self.publisher, self.subscribers)
+        yield from (self.publisher, self.subscribers)
 
     def __str__(self) -> str:
-        return f"Track {self.name} with delay_budget of {self.delay_budget}: " \
+        return f"Track with delay_budget of {self.delay_budget}: " \
             f"{self.publisher} -> [{', '.join(self.subscribers)}]"
 
     def __repr__(self) -> str:
@@ -129,15 +131,15 @@ class Track:
 def display_network_links(network: nx.DiGraph):
     print("Links:")
     for node1, node2, data in sorted(network.edges(data=True), key=lambda kv: kv[2]["latency"]):
-        print(f" * {node1} <-> {node2}:\t\t{data["latency"]:.2f} ms\t\t{data["cost"]:.2f}")
+        print(
+            f" * {node1} <-> {node2}:\t\t{data["latency"]:.2f} ms\t\t{data["cost"]:.2f}")
     print()
 
 
 def display_tracks_stats(tracks: dict[str, Track]):
     print("Track:")
-    for track_id, (name, publisher, subscribers) in tracks.items():
-        print(f"\t{track_id} ({name}): {
-              publisher} -> [{', '.join(subscribers)}]")
+    for track_id, (publisher, subscribers) in tracks.items():
+        print(f"\t{track_id}: {publisher} -> [{', '.join(subscribers)}]")
 
 
 def display_triangle_inequality_satisfaction(network: nx.DiGraph):

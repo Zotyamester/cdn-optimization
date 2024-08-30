@@ -10,7 +10,7 @@ from model import Track, display_network_links, display_tracks_stats
 from plot import get_plotter
 from sample import network
 from solver import MultiTrackOptimizer, SingleTrackOptimizer, get_multi_track_optimizer, get_single_track_optimizer
-from traffic import (generate_live_video_traffic,
+from traffic import (generate_broadcast_traffic,
                      generate_video_conference_traffic)
 
 CACHE_DIR = "./cache"
@@ -88,13 +88,9 @@ def generate_sample_traffic(type: str, peers: list[str]) -> dict[str, Track]:
         raise ValueError("At least two peers are needed")
 
     if type == "live":
-        CONTENT = "Gajdos Összes Rövidítve"
-
-        publishers = [(peers[0], [CONTENT])]
-        subscribers = [(peers[i], CONTENT)
-                       for i in range(1, len(peers))]
-
-        return generate_live_video_traffic(publishers, subscribers)
+        track_id = "vod"
+        publisher, *subscribers = peers
+        return generate_broadcast_traffic(track_id, publisher, subscribers)
     elif type == "video-conference":
         return generate_video_conference_traffic(peers)
     else:

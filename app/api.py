@@ -34,7 +34,6 @@ class NetworkDTO(BaseModel):
 
 
 class TrackDTO(BaseModel):
-    name: str
     publisher: str
     delay_budget: float
 
@@ -54,7 +53,7 @@ async def get_network() -> NetworkDTO:
 
 @app.get("/tracks", status_code=status.HTTP_200_OK)
 async def get_tracks() -> list[TrackDTO]:
-    return list(map(lambda track: TrackDTO(name=track.name, publisher=track.publisher, delay_budget=track.delay_budget), tracks.values()))
+    return list(map(lambda track: TrackDTO(publisher=track.publisher, delay_budget=track.delay_budget), tracks.values()))
 
 
 @app.post("/tracks/{track_namespace}", status_code=status.HTTP_201_CREATED)
@@ -71,7 +70,7 @@ async def get_track(track_namespace: str) -> TrackDTO:
     if track == None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Track namespace not found")
-    return TrackDTO(name=track.name, publisher=track.publisher, delay_budget=track.delay_budget)
+    return TrackDTO(publisher=track.publisher, delay_budget=track.delay_budget)
 
 
 @app.get("/tracks/{track_namespace}/topology", status_code=status.HTTP_200_OK)
