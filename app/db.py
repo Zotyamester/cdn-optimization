@@ -35,8 +35,8 @@ class Node(SQLModel, table=True):
     network_id: int = Field(foreign_key="network.id", ondelete="CASCADE")
 
     name: str = Field(index=True)
-    latitude: float
-    longitude: float
+    lat: float
+    lon: float
 
     network: Network = Relationship(back_populates="node_list")
 
@@ -112,7 +112,7 @@ def create_db_data_from_network():
             node_list=[
                 Node(
                     name=node,
-                    latitude=attrs["location"][0], longitude=attrs["location"][1]
+                    lat=attrs["location"][0], lon=attrs["location"][1]
                 )
                 for node, attrs in model.nodes(data=True)
             ]

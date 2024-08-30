@@ -17,12 +17,12 @@ def simple_plot_network(network: nx.DiGraph, tracks: dict[str, Track], track_to_
                       for node_name, node_attrs in network.nodes.data()}
 
     plt.figure(figsize=(16, 10))
-    nx.draw_networkx(network, pos=node_positions, node_size=2000,
+    nx.draw_networkx(network, pos=node_positions, node_size=2180,
                      font_size=8, font_color="white", arrowstyle="-")
 
     for track, used_links in used_links_per_track.items():
         nx.draw_networkx_edges(network, pos=node_positions,
-                               edgelist=used_links, edge_color=track_to_color[track], width=3, arrowsize=15, node_size=1900)
+                               edgelist=used_links, edge_color=track_to_color[track], width=3, arrowsize=15, node_size=2090)
 
     plt.axis("off")
     plt.savefig(filename)

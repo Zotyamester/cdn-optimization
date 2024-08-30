@@ -110,7 +110,7 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
 
             subtree = subtree_in_tree(tree_node)
 
-            # If the delay budget is met by redirecting the traffic, and the replacement comes with cost reductions.
+            # If the delay budget is met by redirecting the traffic, and the replacement comes with cost reductions
             if all(latencies[v] + delay_balance for v in subtree) and cost_balance < best_replacement.cost_balance:
                 best_replacement = Replacement(
                     replacement_edge, to_be_replaced_edge, subtree, delay_balance, cost_balance)

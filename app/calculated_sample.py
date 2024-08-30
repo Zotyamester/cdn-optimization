@@ -27,69 +27,73 @@ def find_closest_node(graph: nx.DiGraph, cdn_node_data: dict) -> str:
     closest_node = None
     distance = math.inf
     for node, node_data in graph.nodes(data=True):
-        node_distance = geopy.distance.geodesic(cdn_node_data["location"], node_data["location"]).km
+        node_distance = geopy.distance.geodesic(
+            cdn_node_data["location"], node_data["location"]).km
         if node_distance < distance:
             closest_node = node
             distance = node_distance
     return closest_node
 
 
-def load_underlay_network(base_graph_path: str,
-                          cdn_nodes: list[tuple[str, dict]],
-                          calculate_latency: Callable[[nx.DiGraph, str, str], float] = default_calculate_latency,
-                          calculate_cost: Callable[[nx.DiGraph, str, str], float] = default_calculate_cost) -> nx.DiGraph:
-    graph = nx.DiGraph()
-    
-    # Load base graph.
-    base_graph = load_graphml(base_graph_path, calculate_latency, calculate_cost)
-    # Prefix node names with base filename (without extension).
-    common_node_name_prefix = Path(base_graph_path).stem.lower() + "_"
-    nx.relabel_nodes(base_graph, {node: common_node_name_prefix + node for node in base_graph.nodes}, False)
+def load_base_network(base_network_path: str,
+                      calculate_latency: Callable[[nx.DiGraph, str, str], float] = default_calculate_latency,
+                      calculate_cost: Callable[[nx.DiGraph, str, str], float] = default_calculate_cost) -> nx.DiGraph:
+    base_network = load_graphml(base_network_path, calculate_latency, calculate_cost)
 
-    # Add nodes and edges from the base graph.
-    graph.add_nodes_from(base_graph.nodes(data=True))
-    graph.add_edges_from(base_graph.edges(data=True))
+    # Prefix node names with base filename (without extension)
+    common_node_name_prefix = Path(base_network_path).stem.lower() + "_"
+    nx.relabel_nodes(base_network, {node: common_node_name_prefix + node for node in base_network.nodes}, False)
 
-    # Connect the nodes of the CDN to the closest node of the base graph.
+    return base_network
+
+
+def create_underlay_network(base: nx.DiGraph,
+                            cdn_nodes: list[tuple[str, dict]],
+                            calculate_latency: Callable[[nx.DiGraph, str, str], float] = default_calculate_latency) -> nx.DiGraph:
+    underlay = base.copy()  # Make a copy for several reasons, one of which is that the base network is used for selecting the connection point for the actual CDN
+
+    # Connect the nodes of the CDN to the closest node of the base network with zero cost (the cost of access is neglegible for us)
     for cdn_node, cdn_node_data in cdn_nodes:
-        closest_node = find_closest_node(base_graph, cdn_node_data)
+        closest_node = find_closest_node(base, cdn_node_data)
         if closest_node is None:
             continue
-        
-        graph.add_node(cdn_node, location=cdn_node_data["location"])
+
+        underlay.add_node(cdn_node, location=cdn_node_data["location"])
 
         forward_edge = (cdn_node, closest_node)
-        graph.add_edge(
+        underlay.add_edge(
             *forward_edge,
-            latency=calculate_latency(graph, *forward_edge),
-            cost=calculate_cost(graph, *forward_edge)
+            latency=calculate_latency(underlay, *forward_edge),
+            cost=0
         )
 
         reverse_edge = (closest_node, cdn_node)
-        graph.add_edge(
+        underlay.add_edge(
             *reverse_edge,
-            latency=calculate_latency(graph, *reverse_edge),
-            cost=calculate_cost(graph, *reverse_edge)
+            latency=calculate_latency(underlay, *reverse_edge),
+            cost=0
         )
 
-    return graph
+    return underlay
 
 
-def physical_to_virtual(underlay_network: nx.DiGraph, cdn_nodes: list[tuple[str, dict]]) -> dict[tuple[str, str], list[tuple[str, str]]]:
+def create_virtual_to_physical_mapping(underlay_network: nx.DiGraph, cdn_nodes: list[tuple[str, dict]]) -> dict[tuple[str, str], list[tuple[str, str]]]:
     mapping = {}
 
     # O(n) * (O((n + m) * log n) + O(n)) ~ O(n^2 + n * (n + m) * log n)
     for vir_node1, _ in cdn_nodes:
         # O((n + m) * log n)
-        shortest_paths = nx.shortest_path(underlay_network, vir_node1, weight="cost")
+        shortest_paths = nx.shortest_path(
+            underlay_network, vir_node1, weight="cost")
 
-        # O(n) * TODO
+        # O(n) * O(n)
         for vir_node2, _ in cdn_nodes:
             if vir_node1 == vir_node2:
                 continue
             edge = (vir_node1, vir_node2)
             path = shortest_paths[vir_node2]
-            edge_path = [(phy_node1, phy_node2) for phy_node1, phy_node2 in zip(path, path[1:])]
+            edge_path = [(phy_node1, phy_node2)
+                         for phy_node1, phy_node2 in zip(path, path[1:])]
             mapping[edge] = edge_path
 
     return mapping
@@ -108,11 +112,11 @@ def create_overlay_network(underlay_network: nx.DiGraph, cdn_nodes: list[tuple[s
             cost += data["cost"]
 
         overlay_network.add_edge(*edge, latency=latency, cost=cost)
-    
+
     return overlay_network
 
 
-def basemap_plot_network(network: nx.Graph, logical_links: set[tuple[str, str]], physical_links: set[tuple[str, str]]):
+def basemap_plot_network(network: nx.DiGraph, logical_links: set[tuple[str, str]], physical_links: set[tuple[str, str]]):
     min_lon = 90
     max_lon = -90
     min_lat = 180
@@ -171,8 +175,10 @@ def basemap_plot_network(network: nx.Graph, logical_links: set[tuple[str, str]],
     plt.savefig("./plots/plot.png")
     plt.close()
 
-underlay_network = load_underlay_network("./datasource/Cogentco.graphml", cdn_nodes)
-mapping = physical_to_virtual(underlay_network, cdn_nodes)
+
+base_network = load_base_network("./datasource/Cogentco.graphml")
+underlay_network = create_underlay_network(base_network, cdn_nodes)
+mapping = create_virtual_to_physical_mapping(underlay_network, cdn_nodes)
 overlay_network = create_overlay_network(underlay_network, cdn_nodes, mapping)
 
 # To remain compatible with the other samples provided.
