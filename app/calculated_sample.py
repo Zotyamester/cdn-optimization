@@ -2,9 +2,8 @@ import math
 from pathlib import Path
 from typing import Callable
 import geopy.distance
-import matplotlib.pyplot as plt
 import networkx as nx
-from mpl_toolkits.basemap import Basemap
+from plot import basemap_plot_network
 from model import default_calculate_latency, default_calculate_cost, display_triangle_inequality_satisfaction, load_graphml
 
 
@@ -116,66 +115,6 @@ def create_overlay_network(underlay_network: nx.DiGraph, cdn_nodes: list[tuple[s
     return overlay_network
 
 
-def basemap_plot_network(network: nx.DiGraph, logical_links: set[tuple[str, str]], physical_links: set[tuple[str, str]]):
-    min_lon = 90
-    max_lon = -90
-    min_lat = 180
-    max_lat = -180
-
-    node_positions = {}
-    for node, data in network.nodes(data=True):
-        location = data["location"]
-        lon, lat = location[1], location[0]
-        node_positions[node] = (lon, lat)
-
-        if lon < min_lon:
-            min_lon = lon
-        elif lon > max_lon:
-            max_lon = lon
-
-        if lat < min_lat:
-            min_lat = lat
-        elif lat > max_lat:
-            max_lat = lat
-
-    min_lon = max(min_lon - abs(min_lon) * 0.2, -180)
-    max_lon = min(max_lon + abs(max_lon) * 0.2, 180)
-    min_lat = max(min_lat - abs(min_lat) * 0.2, -90)
-    max_lat = min(max_lat + abs(max_lat) * 0.2, 90)
-
-    m = Basemap(resolution="c", projection="merc",
-                llcrnrlon=min_lon, llcrnrlat=min_lat, urcrnrlon=max_lon, urcrnrlat=max_lat)
-
-    plt.figure(figsize=(16, 9))
-    m.fillcontinents(color="lightgray", lake_color="white")
-
-    # Plot links
-    for node1, node2, data in network.edges(data=True):
-        lon1, lat1 = node_positions[node1]
-        lon2, lat2 = node_positions[node2]
-        x1, y1 = m(lon1, lat1)
-        x2, y2 = m(lon2, lat2)
-
-        link = (node1, node2)
-        if link in logical_links:
-            plt.plot([x1, x2], [y1, y2], color="red", linewidth=0.3)
-        elif link in physical_links:
-            plt.plot([x1, x2], [y1, y2], color="orange", linewidth=0.2)
-        else:
-            plt.plot([x1, x2], [y1, y2], color="black", linewidth=0.1)
-
-    # Plot nodes
-    for node, (lon, lat) in node_positions.items():
-        x, y = m(lon, lat)
-        if node in [cdn_node for cdn_node, _ in cdn_nodes]:
-            m.plot(x, y, "ro", markersize=2)
-        else:
-            m.plot(x, y, "bo", markersize=2)
-
-    plt.savefig("./plots/plot.png")
-    plt.close()
-
-
 base_network = load_base_network("./datasource/Cogentco.graphml")
 underlay_network = create_underlay_network(base_network, cdn_nodes)
 mapping = create_virtual_to_physical_mapping(underlay_network, cdn_nodes)
@@ -189,7 +128,9 @@ if __name__ == "__main__":
 
     # Special visualization for the underlay-overlay network:
     # -------------------------------------------------------------------
-    # united_network = nx.compose(underlay_network, overlay_network)
-    # logical_links = set(mapping.keys())
-    # physical_links = set(chain.from_iterable(mapping.values()))
-    # basemap_plot_network(united_network, logical_links, physical_links)
+    united_network = nx.compose(underlay_network, overlay_network)
+    used_nodes = set(overlay_network.nodes)
+    logical_links = set(overlay_network.edges)
+    physical_links = set(underlay_network.edges)
+    basemap_plot_network(united_network, used_nodes, logical_links, set(), "red", "./overlay.png")
+    basemap_plot_network(united_network, used_nodes, physical_links, set(), "orange", "./underlay.png")
