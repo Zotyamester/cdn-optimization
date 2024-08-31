@@ -17,10 +17,6 @@ CACHE_DIR = "./cache"
 PLOT_DIR = "./plots"
 
 
-COLORS = ["red", "blue", "green", "yellow",
-          "purple", "orange", "pink", "brown"]
-
-
 def hash_input_model(network: nx.DiGraph, tracks: dict[str, Track]) -> str:
     base_str = str(network.nodes(data=True)) + \
         str(network.edges(data=True)) + str(tracks)
@@ -88,7 +84,7 @@ def generate_sample_traffic(type: str, peers: list[str]) -> dict[str, Track]:
         raise ValueError("At least two peers are needed")
 
     if type == "live":
-        track_id = "vod"
+        track_id = "live"
         publisher, *subscribers = peers
         return generate_broadcast_traffic(track_id, publisher, subscribers)
     elif type == "video-conference":
@@ -137,12 +133,9 @@ if __name__ == "__main__":
     if args.debug:
         print(f"Computation time: {delta:.4f} s")
 
-    track_to_color = {track_id: color for track_id,
-                      color in zip(tracks.keys(), COLORS)}
-
     if not os.path.exists(PLOT_DIR):
         os.mkdir(PLOT_DIR)
 
     plotter = get_plotter(args.plotter)
-    plotter(network, tracks, track_to_color, used_links_per_track,
-            f"{PLOT_DIR}/{args.plot_name}.png")
+    for track_id, used_links in  used_links_per_track.items():
+        plotter(network, set(network.nodes), set(network.edges), set(used_links), "red", f"{PLOT_DIR}/{args.plot_name}-{track_id}.png")
