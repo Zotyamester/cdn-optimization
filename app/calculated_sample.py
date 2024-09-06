@@ -132,5 +132,5 @@ if __name__ == "__main__":
     used_nodes = set(overlay_network.nodes)
     logical_links = set(overlay_network.edges)
     physical_links = set(underlay_network.edges)
-    basemap_plot_network(united_network, used_nodes, logical_links, set(), "red", "./overlay.png")
-    basemap_plot_network(united_network, used_nodes, physical_links, set(), "orange", "./underlay.png")
+    #basemap_plot_network(united_network, used_nodes, logical_links, set(), "red", "./overlay.png")
+    #basemap_plot_network(united_network, used_nodes, physical_links, set(), "orange", "./underlay.png")

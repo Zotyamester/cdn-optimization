@@ -1,4 +1,3 @@
-import itertools
 from typing import Callable
 
 import matplotlib
@@ -6,17 +5,25 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from mpl_toolkits.basemap import Basemap
 
-from model import Track
+from enum import Enum
+import io
 
 # This is needed to avoid a runtime error when running on a server
 matplotlib.use("Agg")
 
 
+def get_plot_bytes() -> bytes:
+    with io.BytesIO() as buffer:
+        plt.savefig(buffer, format='png', bbox_inches='tight', pad_inches=0.1)
+        buffer.seek(0)
+        image_bytes = buffer.getvalue()
+        return image_bytes
+
+
 def simple_plot_network(network: nx.DiGraph,
                         _1: set[str],
                         _2: set[tuple[str, str]], used_links: set[tuple[str, str]],
-                        color: str,
-                        filename: str):
+                        color: str) -> bytes:
     node_positions = {node_name: (node_attrs["location"][1], node_attrs["location"][0])
                       for node_name, node_attrs in network.nodes.data()}
 
@@ -24,20 +31,22 @@ def simple_plot_network(network: nx.DiGraph,
     nx.draw_networkx(network, pos=node_positions, node_size=2200,
                      font_size=6, font_color="white", arrowstyle="-")
 
-    for used_links in used_links:
-        nx.draw_networkx_edges(network, pos=node_positions,
-                               edgelist=used_links, edge_color=color, width=3, arrowsize=15, node_size=2100)
+    nx.draw_networkx_edges(network, pos=node_positions,
+                           edgelist=used_links, edge_color=color, width=3, arrowsize=15, node_size=2100)
 
     plt.axis("off")
-    plt.savefig(filename, bbox_inches='tight', pad_inches=0.1)
+
+    image_bytes = get_plot_bytes()
+        
     plt.close()
+
+    return image_bytes
 
 
 def basemap_plot_network(network: nx.DiGraph,
                          used_nodes: set[str],
                          shown_links: set[tuple[str, str]], used_links: set[tuple[str, str]],
-                         color: str,
-                         filename: str):
+                         color: str) -> bytes:
     min_lon = 90
     max_lon = -90
     min_lat = 180
@@ -97,14 +106,21 @@ def basemap_plot_network(network: nx.DiGraph,
             m.plot(x, y, "ks", markersize=1.6)
 
     plt.axis("off")
-    plt.savefig(filename, bbox_inches='tight', pad_inches=0.1)
+    
+    image_bytes = get_plot_bytes()
+
     plt.close()
 
+    return image_bytes
 
-def get_plotter(type: str) -> Callable[[nx.DiGraph, set[str], set[tuple[str, str]], set[tuple[str, str]], str, str], None]:
-    if type == "simple":
+
+class PlotterType(str, Enum):
+    SIMPLE = "simple"
+    BASEMAP = "basemap"
+
+
+def get_plotter(type: PlotterType) -> Callable[[nx.DiGraph, set[str], set[tuple[str, str]], set[tuple[str, str]], str], bytes]:
+    if type == PlotterType.SIMPLE:
         return simple_plot_network
-    elif type == "basemap":
+    elif type == PlotterType.BASEMAP:
         return basemap_plot_network
-    else:
-        raise ValueError(f"Unknown plotter type: {type}")

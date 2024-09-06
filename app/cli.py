@@ -7,9 +7,9 @@ from argparse import ArgumentParser
 import networkx as nx
 
 from model import Track, display_network_links, display_tracks_stats
-from plot import get_plotter
+from plot import PlotterType, get_plotter
 from sample import network
-from solver import MultiTrackOptimizer, SingleTrackOptimizer, get_multi_track_optimizer, get_single_track_optimizer
+from solver import MultiTrackOptimizerType, SingleTrackOptimizerType, get_multi_track_optimizer, get_single_track_optimizer
 from traffic import (generate_broadcast_traffic,
                      generate_video_conference_traffic)
 
@@ -41,8 +41,8 @@ def write_to_cache(input_model_hash: str, used_links_per_track: dict[str, list[t
 
 
 def get_optimal_topology(network: nx.DiGraph, tracks: dict[str, Track], use_cache: bool = False,
-                         single_track_optimizer_type: SingleTrackOptimizer = SingleTrackOptimizer.INTEGER_LINEAR_PROGRAMMING,
-                         multi_track_optimizer_type: MultiTrackOptimizer = MultiTrackOptimizer.ADAPTED,
+                         single_track_optimizer_type: SingleTrackOptimizerType = SingleTrackOptimizerType.INTEGER_LINEAR_PROGRAMMING,
+                         multi_track_optimizer_type: MultiTrackOptimizerType = MultiTrackOptimizerType.ADAPTED,
                          debug: bool = False) -> dict[str, list[tuple[str, str]]]:
     input_model_hash = hash_input_model(network, tracks)
 
@@ -103,10 +103,10 @@ if __name__ == "__main__":
     parser.add_argument("--use-cache",
                         action="store_true", default=False, help="Cache the results (using the input data as a key)")
     parser.add_argument("--single-track-optimizer",
-                        choices=[opt.name for opt in SingleTrackOptimizer], default=SingleTrackOptimizer.INTEGER_LINEAR_PROGRAMMING.name,
+                        choices=[opt.name for opt in SingleTrackOptimizerType], default=SingleTrackOptimizerType.INTEGER_LINEAR_PROGRAMMING.name,
                         help="Single track optimizer to use (ignored if multi-track optimizer is not set to ADAPTED)")
     parser.add_argument("--multi-track-optimizer",
-                        choices=[opt.name for opt in MultiTrackOptimizer], default=MultiTrackOptimizer.ADAPTED.name, help="Multi track optimizer to use")
+                        choices=[opt.name for opt in MultiTrackOptimizerType], default=MultiTrackOptimizerType.ADAPTED.name, help="Multi track optimizer to use")
     parser.add_argument("--debug",
                         action="store_true", default=True, help="Debug mode")
     parser.add_argument("--plotter", choices=["simple", "basemap"], default="basemap", help="Plotter to use")
@@ -123,8 +123,8 @@ if __name__ == "__main__":
     start = time.time()
     used_links_per_track = get_optimal_topology(
         network, tracks, args.use_cache,
-        SingleTrackOptimizer[args.single_track_optimizer],
-        MultiTrackOptimizer[args.multi_track_optimizer],
+        SingleTrackOptimizerType[args.single_track_optimizer],
+        MultiTrackOptimizerType[args.multi_track_optimizer],
         args.debug
     )
     end = time.time()
@@ -136,6 +136,9 @@ if __name__ == "__main__":
     if not os.path.exists(PLOT_DIR):
         os.mkdir(PLOT_DIR)
 
-    plotter = get_plotter(args.plotter)
+    plotter = get_plotter(PlotterType[args.plotter])
     for track_id, used_links in  used_links_per_track.items():
-        plotter(network, set(network.nodes), set(network.edges), set(used_links), "red", f"{PLOT_DIR}/{args.plot_name}-{track_id}.png")
+        image_bytes = plotter(network, set(network.nodes), set(network.edges), set(used_links), "red")
+        filename = f"{PLOT_DIR}/{args.plot_name}-{track_id}.png"
+        with open(filename, mode="wb") as file:
+            file.write(image_bytes)

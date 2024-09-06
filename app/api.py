@@ -1,9 +1,10 @@
 from typing import Annotated
 import networkx as nx
-from fastapi import FastAPI, Body, HTTPException, Query, status
+from fastapi import FastAPI, Body, HTTPException, Query, Response, status
 from pydantic import BaseModel
+from app.plot import PlotterType, get_plotter
 from model import Track
-from solver import SingleTrackOptimizer, SingleTrackSolution, get_single_track_optimizer
+from solver import SingleTrackOptimizerType, SingleTrackSolution, get_single_track_optimizer
 
 # This is a static network. TODO: Make it dynamic, use a database.
 from gcp_sample import network
@@ -44,8 +45,7 @@ def get_track_namespace(track_namespace: str) -> str:
 
 @app.get("/network", status_code=status.HTTP_200_OK)
 async def get_network() -> NetworkDTO:
-    nodes = list(map(lambda node_attr: NodeDTO(
-        name=node_attr[0], attributes=node_attr[1]), network.nodes(data=True)))
+    nodes = list(map(lambda node_attr: NodeDTO(attributes=node_attr[1]), network.nodes(data=True)))
     edges = list(map(lambda edge_attr: EdgeDTO(
         src=edge_attr[0], dst=edge_attr[1], attributes=edge_attr[2]), network.edges(data=True)))
     return NetworkDTO(nodes=nodes, edges=edges)
@@ -58,8 +58,7 @@ async def get_tracks() -> list[TrackDTO]:
 
 @app.post("/tracks/{track_namespace}", status_code=status.HTTP_201_CREATED)
 async def create_track(track_namespace: str, track_dto: Annotated[TrackDTO, Body()]) -> TrackDTO | None:
-    track = Track(track_dto.name, track_dto.publisher,
-                  [], track_dto.delay_budget)
+    track = Track(track_dto.publisher, [], track_dto.delay_budget)
     tracks[track_namespace] = track
     return track_dto
 
@@ -82,8 +81,16 @@ async def get_topology_for_track(track_namespace: str) -> list:
     return used_links
 
 
+@app.get("/tracks/{track_namespace}/topology/plot", status_code=status.HTTP_200_OK)
+async def get_topology_plot(track_namespace: str, plotter_type: Annotated[PlotterType | None, Query()] = PlotterType.BASEMAP) -> bytes:
+    used_links = await get_topology_for_track(track_namespace)
+    plotter = get_plotter(plotter_type)
+    image_bytes = plotter(network, set(network.nodes), set(network.edges), set(used_links), "red")
+    return Response(content=image_bytes, media_type="image/png")
+
+
 def optimize(network: nx.DiGraph, track: Track,
-             optimizer_type: SingleTrackOptimizer = SingleTrackOptimizer.INTEGER_LINEAR_PROGRAMMING,
+             optimizer_type: SingleTrackOptimizerType = SingleTrackOptimizerType.INTEGER_LINEAR_PROGRAMMING,
              reduce_network: bool = False) -> SingleTrackSolution:
     if reduce_network:
         network = network.copy()
@@ -95,8 +102,8 @@ def optimize(network: nx.DiGraph, track: Track,
 
 @app.post("/tracks/{track_namespace}/subscription/{subscriber}", status_code=status.HTTP_200_OK)
 async def subscribe_to_track(track_namespace: str, subscriber: str,
-                             optimizer_type: Annotated[SingleTrackOptimizer | None, Query(
-                             )] = SingleTrackOptimizer.INTEGER_LINEAR_PROGRAMMING,
+                             optimizer_type: Annotated[SingleTrackOptimizerType | None, Query(
+                             )] = SingleTrackOptimizerType.INTEGER_LINEAR_PROGRAMMING,
                              reduce_network: Annotated[bool | None, Query()] = False) -> str:
     track = tracks.get(track_namespace, None)
     if track is None:

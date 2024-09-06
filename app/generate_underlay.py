@@ -3,7 +3,7 @@ import networkx as nx
 
 from plot import basemap_plot_network
 from calculated_sample import create_overlay_network, create_underlay_network, create_virtual_to_physical_mapping
-from solver import MultiTrackOptimizer, SingleTrackOptimizer, get_multi_track_optimizer, get_single_track_optimizer
+from solver import MultiTrackOptimizerType, SingleTrackOptimizerType, get_multi_track_optimizer, get_single_track_optimizer
 from model import default_calculate_latency
 from traffic import choose_peers, generate_broadcast_traffic, generate_circle_edge_relays
 
@@ -54,8 +54,8 @@ if __name__ == "__main__":
     publisher, *subscribers = choose_peers(network, number_of_isles + 1, seed=MAGIC_SEED)
     tracks = generate_broadcast_traffic(track_id, publisher, subscribers, delay_budget=2.4)
 
-    single_track_optimizer = get_single_track_optimizer(SingleTrackOptimizer.MULTICAST_HEURISTIC)
-    multi_track_optimizer = get_multi_track_optimizer(MultiTrackOptimizer.ADAPTED, single_track_optimizer=single_track_optimizer)
+    single_track_optimizer = get_single_track_optimizer(SingleTrackOptimizerType.MULTICAST_HEURISTIC)
+    multi_track_optimizer = get_multi_track_optimizer(MultiTrackOptimizerType.ADAPTED, single_track_optimizer=single_track_optimizer)
 
     success, objective, used_links_per_track = multi_track_optimizer(network, tracks)
 
@@ -68,5 +68,5 @@ if __name__ == "__main__":
     used_logical_links = set(used_links_per_track[track_id])
     physical_links = set(underlay_network.edges)
     used_physical_links = set(itertools.chain.from_iterable(map(lambda logical_link: mapping[logical_link], used_logical_links)))
-    basemap_plot_network(united_network, used_nodes, logical_links, used_logical_links, "red", "./overlay.png")
-    basemap_plot_network(united_network, used_nodes, physical_links, used_physical_links, "orange", "./underlay.png")
+    #basemap_plot_network(united_network, used_nodes, logical_links, used_logical_links, "red", "./overlay.png")
+    #basemap_plot_network(united_network, used_nodes, physical_links, used_physical_links, "orange", "./underlay.png")
