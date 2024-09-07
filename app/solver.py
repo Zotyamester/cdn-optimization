@@ -46,30 +46,28 @@ def direct_link_tree(graph: nx.Graph, track: Track) -> SingleTrackSolution:
 
 # Spectrum::Left - Approximately optimal in cost while keeping the delay constraints
 def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
-    # Complexity analysis:
-    #  Suppose that n is the number of subscribers and m is the number of links in the tree
+    # Suppose that n is the number of subscribers and m is the number of links in the tree
 
     latencies = {track.publisher: 0.0}
     cost = 0.0
     tree = nx.DiGraph()
     tree.add_node(track.publisher)
 
-    # Could be O(1) ideally (i.e., if a reverse edge list is stored in the graph representation), but otherwise implementation defined
-    def previous_in_tree(node):
+    # O(1) ideally (if a reverse edge list is stored in the graph representation), otherwise implementation-defined
+    def previous_in_tree(node: str) -> str:
         return list(tree.in_edges(node))[0][0]
 
     # O(n) + O(n + m) ≈ O(n)
-    # ╰┬╯    ╰──┬───╯
+    # └┬─┘   └──┬───┘
     #  │        └─ BFS's base complexity (assuming edge lists are used),
     #  │           but since it's executed on a tree, m will be at most n - 1,
     #  │           thus it reduces to O(n + n) ≈ O(n)
     #  └─ list comprehension's complexity
-    def subtree_in_tree(node):
+    def subtree_in_tree(node: str) -> list[str]:
         return [v for _, v in nx.bfs_edges(tree, node)]
 
     # O(n) * O(1) ≈ O(n)
-    def reverse_path_to_root(node):
-        # TODO: is the list really necessary? why not just return build and return a set immediately?
+    def reverse_path_to_root(node: str) -> list[str]:
         path = []
         while True:
             path.append(node)
@@ -80,7 +78,7 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
         return path
 
     # O(n) + O(n) * O(n) ≈ O(n) + O(n²) ≈ O(n²)
-    def augment(node):
+    def augment(node: str):
         nonlocal graph, track, latencies, cost, tree
 
         Replacement = namedtuple("Replacement", [
@@ -123,7 +121,7 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
                 latencies[v] += best_replacement.delay_balance
 
     # O(n) + O(n²) ≈ O(n²)
-    def add_subscriber(node):
+    def add_subscriber(node: str) -> str | None:
         nonlocal graph, track, latencies, cost, tree
 
         # Find the best edge to connect the node to the tree (without reordering the whole tree)
@@ -145,7 +143,7 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
 
         # Didn't find any suitable edge (i.e., not even the direct link to the publisher would work)
         if best_edge is None:
-            return SingleTrackSolution.not_found()
+            return None
 
         # Add the edge to the tree and update the cost and latencies
         connection_node = best_edge[0]
@@ -157,10 +155,13 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
 
         # See if we can improve one of our existing connections by redirecting traffic through the newly added node
         augment(node)
+        
+        return connection_node
 
     # O(n) * O(n²) ≈ O(n³)
     for node in track.subscribers:
-        add_subscriber(node)
+        if add_subscriber(node) is None:
+            return SingleTrackSolution.not_found()
 
     return SingleTrackSolution.found(cost, list(tree.edges))
 
