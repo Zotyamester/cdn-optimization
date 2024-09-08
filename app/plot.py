@@ -20,6 +20,11 @@ def get_plot_bytes() -> bytes:
         return image_bytes
 
 
+def save_plot(filename: str, image_bytes: bytes):
+    with open(filename, mode="wb") as file:
+        file.write(image_bytes)
+
+
 def simple_plot_network(network: nx.DiGraph,
                         _1: set[str],
                         _2: set[tuple[str, str]], used_links: set[tuple[str, str]],

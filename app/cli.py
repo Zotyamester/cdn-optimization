@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 import networkx as nx
 
 from model import Track, display_network_links, display_tracks_stats
-from plot import PlotterType, get_plotter
+from plot import PlotterType, get_plotter, save_plot
 from sample import network
 from solver import MultiTrackOptimizerType, SingleTrackOptimizerType, get_multi_track_optimizer, get_single_track_optimizer
 from traffic import (generate_broadcast_traffic,
@@ -140,5 +140,4 @@ if __name__ == "__main__":
     for track_id, used_links in  used_links_per_track.items():
         image_bytes = plotter(network, set(network.nodes), set(network.edges), set(used_links), "red")
         filename = f"{PLOT_DIR}/{args.plot_name}-{track_id}.png"
-        with open(filename, mode="wb") as file:
-            file.write(image_bytes)
+        save_plot(filename, image_bytes)

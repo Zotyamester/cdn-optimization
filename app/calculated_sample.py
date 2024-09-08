@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Callable
 import geopy.distance
 import networkx as nx
-from plot import basemap_plot_network
+from plot import basemap_plot_network, save_plot
 from model import default_calculate_latency, default_calculate_cost, display_triangle_inequality_satisfaction, load_graphml
 
 
@@ -22,10 +22,10 @@ cdn_nodes = [
 ]
 
 
-def find_closest_node(graph: nx.DiGraph, cdn_node_data: dict) -> str:
+def find_closest_node(network: nx.DiGraph, cdn_node_data: dict) -> str:
     closest_node = None
     distance = math.inf
-    for node, node_data in graph.nodes(data=True):
+    for node, node_data in network.nodes(data=True):
         node_distance = geopy.distance.geodesic(
             cdn_node_data["location"], node_data["location"]).km
         if node_distance < distance:
@@ -46,14 +46,14 @@ def load_base_network(base_network_path: str,
     return base_network
 
 
-def create_underlay_network(base: nx.DiGraph,
+def create_underlay_network(base_network: nx.DiGraph,
                             cdn_nodes: list[tuple[str, dict]],
                             calculate_latency: Callable[[nx.DiGraph, str, str], float] = default_calculate_latency) -> nx.DiGraph:
-    underlay = base.copy()  # Make a copy for several reasons, one of which is that the base network is used for selecting the connection point for the actual CDN
+    underlay = base_network.copy()  # Make a copy for several reasons, one of which is that the base network is used for selecting the connection point for the actual CDN
 
     # Connect the nodes of the CDN to the closest node of the base network with zero cost (the cost of access is neglegible for us)
     for cdn_node, cdn_node_data in cdn_nodes:
-        closest_node = find_closest_node(base, cdn_node_data)
+        closest_node = find_closest_node(base_network, cdn_node_data)
         if closest_node is None:
             continue
 
@@ -132,5 +132,5 @@ if __name__ == "__main__":
     used_nodes = set(overlay_network.nodes)
     logical_links = set(overlay_network.edges)
     physical_links = set(underlay_network.edges)
-    #basemap_plot_network(united_network, used_nodes, logical_links, set(), "red", "./overlay.png")
-    #basemap_plot_network(united_network, used_nodes, physical_links, set(), "orange", "./underlay.png")
+    save_plot("./overlay.png", basemap_plot_network(united_network, used_nodes, logical_links, set(), "red"))
+    save_plot("./underlay.png", basemap_plot_network(united_network, used_nodes, physical_links, set(), "orange"))

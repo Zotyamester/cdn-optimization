@@ -57,6 +57,15 @@ def generate_circle_edge_relays(network: nx.DiGraph, count: int) -> list[tuple[s
     return relays
 
 
+def generate_point_of_presence_relays(network: nx.DiGraph) -> list[tuple[str, dict[str, tuple[float, float]]]]:
+    relays = []
+
+    for i, (node, attrs) in enumerate(network.nodes(data=True)):
+        relays.append((f"relay{i}", {"location": attrs["location"]}))
+
+    return relays
+
+
 def choose_peers(network: nx.DiGraph, count: int, seed: int | None = None) -> list[str]:
     if seed is not None:
         random.seed(seed)

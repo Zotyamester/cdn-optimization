@@ -1,13 +1,13 @@
 import itertools
 import networkx as nx
 
-from plot import basemap_plot_network
+from plot import basemap_plot_network, save_plot
 from calculated_sample import create_overlay_network, create_underlay_network, create_virtual_to_physical_mapping
 from solver import MultiTrackOptimizerType, SingleTrackOptimizerType, get_multi_track_optimizer, get_single_track_optimizer
 from model import default_calculate_latency
-from traffic import choose_peers, generate_broadcast_traffic, generate_circle_edge_relays
+from traffic import choose_peers, generate_broadcast_traffic, generate_circle_edge_relays, generate_point_of_presence_relays
 
-MAGIC_SEED = 42
+MAGIC_SEED = 69
 
 
 def generate_isles(number_of_isles: int, nodes_per_isle: int) -> nx.DiGraph:
@@ -40,10 +40,11 @@ def generate_isles(number_of_isles: int, nodes_per_isle: int) -> nx.DiGraph:
 
 
 if __name__ == "__main__":
-    number_of_isles, nodes_per_isle = 4, 5
+    number_of_isles, nodes_per_isle = 2, 5
 
     base_network = generate_isles(number_of_isles, nodes_per_isle)
-    cdn_nodes = generate_circle_edge_relays(base_network, number_of_isles * 2)
+    # cdn_nodes = generate_circle_edge_relays(base_network, number_of_isles * 2)
+    cdn_nodes = generate_point_of_presence_relays(base_network)
     
     underlay_network = create_underlay_network(base_network, cdn_nodes)
     mapping = create_virtual_to_physical_mapping(underlay_network, cdn_nodes)
@@ -51,7 +52,7 @@ if __name__ == "__main__":
     network = overlay_network
 
     track_id = "live"
-    publisher, *subscribers = choose_peers(network, number_of_isles + 1, seed=MAGIC_SEED)
+    publisher, *subscribers = choose_peers(network, number_of_isles * 2, seed=MAGIC_SEED)
     tracks = generate_broadcast_traffic(track_id, publisher, subscribers, delay_budget=2.4)
 
     single_track_optimizer = get_single_track_optimizer(SingleTrackOptimizerType.MULTICAST_HEURISTIC)
@@ -61,12 +62,12 @@ if __name__ == "__main__":
 
     print(f"Optimization {"succeeded" if success else "failed"}:")
     print(f"\tTotal cost of network: {objective:.2f} USD")
-    
+
     united_network = nx.compose(underlay_network, overlay_network)
     used_nodes = set(overlay_network.nodes)
     logical_links = set(overlay_network.edges)
     used_logical_links = set(used_links_per_track[track_id])
     physical_links = set(underlay_network.edges)
     used_physical_links = set(itertools.chain.from_iterable(map(lambda logical_link: mapping[logical_link], used_logical_links)))
-    #basemap_plot_network(united_network, used_nodes, logical_links, used_logical_links, "red", "./overlay.png")
-    #basemap_plot_network(united_network, used_nodes, physical_links, used_physical_links, "orange", "./underlay.png")
+    save_plot("./overlay.png", basemap_plot_network(united_network, used_nodes, logical_links, used_logical_links, "red"))
+    save_plot("./underlay.png", basemap_plot_network(united_network, used_nodes, physical_links, used_physical_links, "orange"))
