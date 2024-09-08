@@ -28,13 +28,13 @@ class SingleTrackSolution:
 
 
 # Spectrum::LeftMost - Keeping the delay constraints
-def direct_link_tree(graph: nx.Graph, track: Track) -> SingleTrackSolution:
+def direct_link_tree(network: nx.Graph, track: Track) -> SingleTrackSolution:
     cost = 0.0
     edges = []
     for subscriber in track.subscribers:
         edge = (track.publisher, subscriber)
 
-        data = graph.get_edge_data(*edge)
+        data = network.get_edge_data(*edge)
         if data["latency"] > track.delay_budget:
             return SingleTrackSolution.not_found()
 
@@ -45,7 +45,7 @@ def direct_link_tree(graph: nx.Graph, track: Track) -> SingleTrackSolution:
 
 
 # Spectrum::Left - Approximately optimal in cost while keeping the delay constraints
-def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
+def multicast_heuristic(network: nx.DiGraph, track: Track) -> SingleTrackSolution:
     # Suppose that n is the number of subscribers and m is the number of links in the tree
 
     latencies = {track.publisher: 0.0}
@@ -79,7 +79,7 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
 
     # O(n) + O(n) * O(n) ≈ O(n) + O(n²) ≈ O(n²)
     def augment(node: str):
-        nonlocal graph, track, latencies, cost, tree
+        nonlocal network, track, latencies, cost, tree
 
         Replacement = namedtuple("Replacement", [
             "new_edge", "old_edge", "subtree", "delay_balance", "cost_balance"])
@@ -101,10 +101,10 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
             to_be_replaced_edge = (previous_node, tree_node)
             replacement_edge = (node, tree_node)
 
-            delay_balance = graph.get_edge_data(
-                *replacement_edge)["latency"] - graph.get_edge_data(*to_be_replaced_edge)["latency"]
-            cost_balance = graph.get_edge_data(
-                *replacement_edge)["cost"] - graph.get_edge_data(*to_be_replaced_edge)["cost"]
+            delay_balance = network.get_edge_data(
+                *replacement_edge)["latency"] - network.get_edge_data(*to_be_replaced_edge)["latency"]
+            cost_balance = network.get_edge_data(
+                *replacement_edge)["cost"] - network.get_edge_data(*to_be_replaced_edge)["cost"]
 
             subtree = subtree_in_tree(tree_node)
 
@@ -122,7 +122,7 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
 
     # O(n) + O(n²) ≈ O(n²)
     def add_subscriber(node: str) -> str | None:
-        nonlocal graph, track, latencies, cost, tree
+        nonlocal network, track, latencies, cost, tree
 
         # Find the best edge to connect the node to the tree (without reordering the whole tree)
         best_edge = min(
@@ -131,13 +131,13 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
                     edge[0] in tree.nodes and
                     edge[1] == node and
                     latencies[edge[0]] +
-                    graph.get_edge_data(
+                    network.get_edge_data(
                         *edge
                     )["latency"] <= track.delay_budget,
-                graph.edges
+                network.edges
             ),
-            key=lambda edge: (graph.get_edge_data(
-                *edge)["cost"], graph.get_edge_data(*edge)["latency"]),
+            key=lambda edge: (network.get_edge_data(
+                *edge)["cost"], network.get_edge_data(*edge)["latency"]),
             default=None
         )
 
@@ -147,8 +147,8 @@ def multicast_heuristic(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
 
         # Add the edge to the tree and update the cost and latencies
         connection_node = best_edge[0]
-        best_cost, best_latency = graph.get_edge_data(
-            *best_edge)["cost"], graph.get_edge_data(*best_edge)["latency"]
+        best_cost, best_latency = network.get_edge_data(
+            *best_edge)["cost"], network.get_edge_data(*best_edge)["latency"]
         tree.add_edge(*best_edge)
         cost += best_cost
         latencies[node] = latencies[connection_node] + best_latency
@@ -232,18 +232,18 @@ def get_optimal_topology_for_a_single_track(network: nx.DiGraph, track: Track) -
 
 
 # Spectrum::RightMost - Optimal in cost
-def minimum_spanning_tree(graph: nx.DiGraph, track: Track) -> SingleTrackSolution:
-    graph = graph.to_undirected()
-    graph.remove_nodes_from(
-        set(graph.nodes) - {track.publisher, *track.subscribers})
+def minimum_spanning_tree(network: nx.DiGraph, track: Track) -> SingleTrackSolution:
+    network = network.to_undirected()
+    network.remove_nodes_from(
+        set(network.nodes) - {track.publisher, *track.subscribers})
 
-    mst = nx.minimum_spanning_tree(graph, weight="cost")
+    mst = nx.minimum_spanning_tree(network, weight="cost")
     mst_from_publisher = nx.bfs_tree(mst, track.publisher)
 
     cost = 0.0
     latencies = {track.publisher: 0.0}
     for u, v in mst_from_publisher.edges:
-        data = graph.get_edge_data(u, v)
+        data = network.get_edge_data(u, v)
 
         cost += data["cost"]
         latencies[v] = latencies[u] + data["latency"]
