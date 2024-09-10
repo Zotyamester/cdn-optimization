@@ -77,7 +77,7 @@ def multicast_heuristic(network: nx.DiGraph, track: Track) -> SingleTrackSolutio
         path.reverse()
         return path
 
-    # O(n) + O(n) * O(n) ≈ O(n) + O(n²) ≈ O(n²)
+    # O(n) + O(n) * (O(n) + O(n)) + O(n) ≈ O(n) + O(n²) + O(n) ≈ O(n²)
     def augment(node: str):
         nonlocal network, track, latencies, cost, tree
 
