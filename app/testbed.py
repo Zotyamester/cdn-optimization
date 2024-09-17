@@ -1,15 +1,19 @@
+import random
 import sys
 import time
 import requests
 
 BASE_URL = "http://127.0.0.1:800%d" % int(sys.argv[1] if len(sys.argv) > 1 else '0')
 
-track_human_readable_name = "Gajdos Összes Rövidítve"
-track_namespace = "live"
-publisher = "us-west1"
-delay_budget = 1000
+network = requests.get(f"{BASE_URL}/network").json()
+nodes = list(map(lambda obj: obj["name"], network["nodes"]))
 
-subscribers = ["us-west2", "us-east1", "europe-south1", "europe-west1", "europe-west2", "europe-west3", "southamerica-east1", "asia-west1", "asia-east1"]
+random.seed(69)
+peers = random.sample(nodes, k=int(len(nodes) * 0.55))
+
+track_namespace = "live"
+delay_budget = 1000
+publisher, *subscribers = peers
 
 optimizer_type = "multicast_heuristic"
 reduce_network = False
