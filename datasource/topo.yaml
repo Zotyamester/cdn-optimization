@@ -1,0 +1,44 @@
+# origi, test, opti
+api: "opti"
+# ffmpeg, clock, gst
+mode: "gst"
+# the track name determines 2 things:
+# before the underscore is the video file resolution and full or 30sec length :bbb-[360/480/720/720]{"","-30"}
+# after the underscore is the delay budget that the optimizer will use
+first_hop_relay:
+  - relayid: "node1"
+    track: "bbb-720-10_1000"
+last_hop_relay:
+  - relayid: "node1"
+    track: "bbb-720-10_1000"
+
+nodes:
+  - name: "node1"
+    location:
+      - 40.7128
+      - -74.0060
+  - name: "node2"
+    location:
+      - 37.7749
+      - -122.4194
+  - name: "node3"
+    location:
+      - 37.11
+      - -122.4194
+
+edges:
+  - node1: "node1"
+    node2: "node2"
+    attributes:
+      latency: 200
+      cost: 0.02
+  - node1: "node2"
+    node2: "node3"
+    attributes:
+      latency: 10
+      cost: 0.02
+  - node1: "node1"
+    node2: "node3"
+    attributes:
+      latency: 20
+      cost: 0.01

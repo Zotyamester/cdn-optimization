@@ -88,7 +88,7 @@ def display_network_links(network: nx.DiGraph):
     print("Links:")
     for node1, node2, data in sorted(network.edges(data=True), key=lambda kv: kv[2]["latency"]):
         print(
-            f" * {node1} <-> {node2}:\t\t{data["latency"]:.2f} ms\t\t{data["cost"]:.2f}")
+            f" * {node1} <-> {node2}:\t\t{data['latency']:.2f} ms\t\t{data['cost']:.2f}")
     print()
 
 
@@ -138,8 +138,7 @@ class Track:
         self.subscribers.add(subscriber)
 
         if stream_id is None:
-            stream_id = f"f{
-                max(map(lambda sid: int(sid[1:]), self.streams.keys()), default=0) + 1}"
+            stream_id = f"f{max(map(lambda sid: int(sid[1:]), self.streams.keys()), default=0) + 1}"
         self.streams[stream_id] = defaultdict(
             lambda: 0,
             {

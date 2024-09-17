@@ -1,0 +1,85 @@
+# origi, test, opti
+api: "opti"
+# ffmpeg, clock, gst
+mode: "gst"
+first_hop_relay:
+    - relayid: 1
+      track: "bbb-640x360-10"
+last_hop_relay:
+    - relayid: 5
+      track: "bbb-640x360-10"
+
+nodes:
+    - name: "node1"
+      location:
+      - 40.7128
+      - -74.0060
+    - name: "node2"
+      location:
+      - 37.7749
+      - -122.4194
+    - name: "node3"
+      location:
+      - 51.5074
+      - -0.1278
+    - name: "node4"
+      location:
+      - -23.5505
+      - -46.7333
+    - name: "node5"
+      location:
+      - -33.8679
+      - 151.2073
+
+
+edges:
+    - node1: "node1"
+      node2: "node2"
+      attributes:
+       latency: 10
+       cost: 0.02
+    - node1: "node1"
+      node2: "node3"
+      attributes:
+       latency: 20
+       cost: 0.03
+    - node1: "node1"
+      node2: "node4"
+      attributes:
+       latency: 30
+       cost: 0.04
+    - node1: "node1"
+      node2: "node5"
+      attributes:
+       latency: 40
+       cost: 0.05
+    - node1: "node2"
+      node2: "node3"
+      attributes:
+       latency: 50
+       cost: 0.06
+    - node1: "node2"
+      node2: "node4"
+      attributes:
+       latency: 60
+       cost: 0.07
+    - node1: "node2"
+      node2: "node5"
+      attributes:
+       latency: 70
+       cost: 0.08
+    - node1: "node3"
+      node2: "node4"
+      attributes:
+       latency: 80
+       cost: 0.09
+    - node1: "node3"
+      node2: "node5"
+      attributes:
+       latency: 90
+       cost: 0.10
+    - node1: "node4"
+      node2: "node5"
+      attributes:
+       latency: 100
+       cost: 0.11
