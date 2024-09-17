@@ -1,3 +1,4 @@
+from sample import calculate_cost_factory, store_network
 from model import create_graph, display_triangle_inequality_satisfaction
 
 # Hardcoded sample network based on VM-VM data transfer pricing within Google Cloud regions.
@@ -313,18 +314,7 @@ link_costs = {
 }
 
 
-def calculate_cost(_, node1, node2):
-    global link_costs
-    link = (node1, node2)
-    if link in link_costs:
-        return link_costs[link]
-    reverse_link = (node2, node1)
-    if reverse_link in link_costs:
-        return link_costs[reverse_link]
-    raise ValueError(f"Link cost not found for {link} or {reverse_link}")
-
-
-network = create_graph(nodes, calculate_cost=calculate_cost)
-
 if __name__ == "__main__":
+    network = create_graph(nodes, calculate_cost=calculate_cost_factory(link_costs))
     display_triangle_inequality_satisfaction(network)
+    store_network(network, "datasource/gcp_topo_2.yaml")

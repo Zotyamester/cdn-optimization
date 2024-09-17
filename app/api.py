@@ -2,11 +2,11 @@ from typing import Annotated
 import networkx as nx
 from fastapi import FastAPI, Body, HTTPException, Query, Response, status
 from pydantic import BaseModel
-from app.plot import PlotterType, get_plotter
+from plot import PlotterType, get_plotter
 from model import Track
 from solver import SingleTrackOptimizerType, SingleTrackSolution, get_single_track_optimizer
 
-from sample2 import make_network
+from sample import load_network
 from fastapi import Body
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -18,8 +18,8 @@ tracks: dict[str, Track] = {}
 # This will be our in-memory cache. TODO: Use a real database
 used_links_per_track: dict[str, list[tuple[str, str]]] = {}
 
-topo = os.getenv("TOPOFILE", "./datasource/small_topo.yaml")
-network = make_network(topo)
+topo = os.path.join("datasource", os.getenv("TOPOFILE", "small_topo.yaml"))
+network = load_network(topo)
 
 app = FastAPI()
 
