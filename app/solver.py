@@ -210,8 +210,7 @@ def get_optimal_topology_for_a_single_track(network: nx.DiGraph, track: Track) -
     for stream in track.streams.keys():
         for link in network.edges:
             prob += selected_links[stream][link] * M >= transmission_bitrates[stream][link], \
-                f"z_{stream}_({link[0]},{
-                link[1]})*M>=x_{stream}_({link[0]},{link[1]})"
+                f"z_{stream}_({link[0]},{link[1]})*M>=x_{stream}_({link[0]},{link[1]})"
 
     # Constraint: sum(zfij * dij) <= Df
     for stream in track.streams.keys():
@@ -320,8 +319,7 @@ def get_optimal_topology_for_multiple_tracks(network: nx.DiGraph, tracks: dict[s
         for stream in track.streams.keys():
             for link in network.edges:
                 prob += link_usages[track_id][link] >= transmission_bitrates[track_id][stream][link], \
-                    f"y_{track_id}_({link[0]},{link[1]})>=x_{track_id}_{
-                    stream}_({link[0]},{link[1]})"
+                    f"y_{track_id}_({link[0]},{link[1]})>=x_{track_id}_{stream}_({link[0]},{link[1]})"
 
     # Constraint: sum(xftji) - sum(xftij) == Rfti
     for track_id, track in tracks.items():
@@ -343,8 +341,7 @@ def get_optimal_topology_for_multiple_tracks(network: nx.DiGraph, tracks: dict[s
         for stream in track.streams.keys():
             for link in network.edges:
                 prob += selected_links[track_id][stream][link] * M >= transmission_bitrates[track_id][stream][link], \
-                    f"z_{track_id}_{stream}_({link[0]},{
-                    link[1]})*M>=x_{track_id}_{stream}_({link[0]},{link[1]})"
+                    f"z_{track_id}_{stream}_({link[0]},{link[1]})*M>=x_{track_id}_{stream}_({link[0]},{link[1]})"
 
     # Constraint: sum(zftij * dij) <= Dft
     for track_id, track in tracks.items():

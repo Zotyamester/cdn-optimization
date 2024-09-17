@@ -1,0 +1,1444 @@
+origi_api: "true"
+mode: "clock"
+
+first_hop_relay:
+    - relayid: "europe-west1"
+      track: "bbb-720-10_1000"
+last_hop_relay:
+    - relayid: "europe-west1"
+      track: "bbb-720-10_1000"
+
+
+# nearly the data from https://cloud.google.com/vpc/pricing#egress-within-gcp
+# the latencies are just made up (costs*1000)
+nodes:
+  - name: "europe-west1"
+    location:
+      - 50.4791
+      - 3.8646
+  - name: "europe-west2"
+    location:
+      - 51.5074
+      - -0.1278
+  - name: "europe-west3"
+    location:
+      - 50.1109
+      - 8.6821
+  - name: "europe-north1"
+    location:
+      - 60.5697
+      - 27.1881
+  - name: "europe-south1"
+    location:
+      - 45.4642
+      - 9.1900
+  - name: "northamerica-northeast1"
+    location:
+      - 45.5017
+      - -73.5673
+  - name: "us-east1"
+    location:
+      - 33.8361
+      - -81.1637
+  - name: "us-west1"
+    location:
+      - 45.5946
+      - -121.1787
+  - name: "us-west2"
+    location:
+      - 34.0522
+      - -118.2437
+  - name: "asia-east1"
+    location:
+      - 24.0742
+      - 120.5624
+  - name: "asia-northeast1"
+    location:
+      - 35.6895
+      - 139.6917
+  - name: "asia-southeast1"
+    location:
+      - 1.3521
+      - 103.8198
+  - name: "asia-southeast2"
+    location:
+      - -6.2088
+      - 106.8456
+  - name: "australia-southeast1"
+    location:
+      - -33.8651
+      - 151.2093
+  - name: "asia-west1"
+    location:
+      - 19.0760
+      - 72.8777
+  - name: "southamerica-east1"
+    location:
+      - -23.5505
+      - -46.6333
+  - name: "africa-west1"
+    location:
+      - -26.2041
+      - 28.0473
+
+edges:
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: northamerica-northeast1
+  node2: us-east1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: northamerica-northeast1
+  node2: us-west1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: northamerica-northeast1
+  node2: us-west2
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: us-east1
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: us-east1
+  node2: us-west1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: us-east1
+  node2: us-west2
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: us-west1
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: us-west1
+  node2: us-east1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: us-west1
+  node2: us-west2
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: us-west2
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: us-west2
+  node2: us-east1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: us-west2
+  node2: us-west1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: northamerica-northeast1
+  node2: europe-west1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: northamerica-northeast1
+  node2: europe-west2
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: northamerica-northeast1
+  node2: europe-west3
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: northamerica-northeast1
+  node2: europe-north1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: northamerica-northeast1
+  node2: europe-south1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-east1
+  node2: europe-west1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-east1
+  node2: europe-west2
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-east1
+  node2: europe-west3
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-east1
+  node2: europe-north1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-east1
+  node2: europe-south1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-west1
+  node2: europe-west1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-west1
+  node2: europe-west2
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-west1
+  node2: europe-west3
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-west1
+  node2: europe-north1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-west1
+  node2: europe-south1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-west2
+  node2: europe-west1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-west2
+  node2: europe-west2
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-west2
+  node2: europe-west3
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-west2
+  node2: europe-north1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: us-west2
+  node2: europe-south1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: northamerica-northeast1
+  node2: asia-east1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: northamerica-northeast1
+  node2: asia-northeast1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: northamerica-northeast1
+  node2: asia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: northamerica-northeast1
+  node2: asia-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: us-east1
+  node2: asia-east1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: us-east1
+  node2: asia-northeast1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: us-east1
+  node2: asia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: us-east1
+  node2: asia-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: us-west1
+  node2: asia-east1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: us-west1
+  node2: asia-northeast1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: us-west1
+  node2: asia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: us-west1
+  node2: asia-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: us-west2
+  node2: asia-east1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: us-west2
+  node2: asia-northeast1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: us-west2
+  node2: asia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: us-west2
+  node2: asia-west1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: northamerica-northeast1
+  node2: asia-southeast2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: us-east1
+  node2: asia-southeast2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: us-west1
+  node2: asia-southeast2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: us-west2
+  node2: asia-southeast2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: northamerica-northeast1
+  node2: australia-southeast1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: us-east1
+  node2: australia-southeast1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: us-west1
+  node2: australia-southeast1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: us-west2
+  node2: australia-southeast1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: northamerica-northeast1
+  node2: southamerica-east1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: us-east1
+  node2: southamerica-east1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: us-west1
+  node2: southamerica-east1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: us-west2
+  node2: southamerica-east1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: northamerica-northeast1
+  node2: africa-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: us-east1
+  node2: africa-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: us-west1
+  node2: africa-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: us-west2
+  node2: africa-west1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-west1
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-west1
+  node2: us-east1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-west1
+  node2: us-west1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-west1
+  node2: us-west2
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-west2
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-west2
+  node2: us-east1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-west2
+  node2: us-west1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-west2
+  node2: us-west2
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-west3
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-west3
+  node2: us-east1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-west3
+  node2: us-west1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-west3
+  node2: us-west2
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-north1
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-north1
+  node2: us-east1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-north1
+  node2: us-west1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-north1
+  node2: us-west2
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-south1
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-south1
+  node2: us-east1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-south1
+  node2: us-west1
+- attributes:
+    cost: 0.05
+    latency: 50
+  node1: europe-south1
+  node2: us-west2
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-west1
+  node2: europe-west2
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-west1
+  node2: europe-west3
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-west1
+  node2: europe-north1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-west1
+  node2: europe-south1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-west2
+  node2: europe-west1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-west2
+  node2: europe-west3
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-west2
+  node2: europe-north1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-west2
+  node2: europe-south1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-west3
+  node2: europe-west1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-west3
+  node2: europe-west2
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-west3
+  node2: europe-north1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-west3
+  node2: europe-south1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-north1
+  node2: europe-west1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-north1
+  node2: europe-west2
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-north1
+  node2: europe-west3
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-north1
+  node2: europe-south1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-south1
+  node2: europe-west1
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-south1
+  node2: europe-west2
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-south1
+  node2: europe-west3
+- attributes:
+    cost: 0.02
+    latency: 20
+  node1: europe-south1
+  node2: europe-north1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-west1
+  node2: asia-east1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-west1
+  node2: asia-northeast1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-west1
+  node2: asia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: europe-west1
+  node2: asia-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-west2
+  node2: asia-east1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-west2
+  node2: asia-northeast1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-west2
+  node2: asia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: europe-west2
+  node2: asia-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-west3
+  node2: asia-east1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-west3
+  node2: asia-northeast1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-west3
+  node2: asia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: europe-west3
+  node2: asia-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-north1
+  node2: asia-east1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-north1
+  node2: asia-northeast1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-north1
+  node2: asia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: europe-north1
+  node2: asia-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-south1
+  node2: asia-east1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-south1
+  node2: asia-northeast1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: europe-south1
+  node2: asia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: europe-south1
+  node2: asia-west1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: europe-west1
+  node2: asia-southeast2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: europe-west2
+  node2: asia-southeast2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: europe-west3
+  node2: asia-southeast2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: europe-north1
+  node2: asia-southeast2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: europe-south1
+  node2: asia-southeast2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: europe-west1
+  node2: australia-southeast1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: europe-west2
+  node2: australia-southeast1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: europe-west3
+  node2: australia-southeast1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: europe-north1
+  node2: australia-southeast1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: europe-south1
+  node2: australia-southeast1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: europe-west1
+  node2: southamerica-east1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: europe-west2
+  node2: southamerica-east1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: europe-west3
+  node2: southamerica-east1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: europe-north1
+  node2: southamerica-east1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: europe-south1
+  node2: southamerica-east1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: europe-west1
+  node2: africa-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: europe-west2
+  node2: africa-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: europe-west3
+  node2: africa-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: europe-north1
+  node2: africa-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: europe-south1
+  node2: africa-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-east1
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-east1
+  node2: us-east1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-east1
+  node2: us-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-east1
+  node2: us-west2
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-northeast1
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-northeast1
+  node2: us-east1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-northeast1
+  node2: us-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-northeast1
+  node2: us-west2
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-southeast1
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-southeast1
+  node2: us-east1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-southeast1
+  node2: us-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-southeast1
+  node2: us-west2
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: us-east1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: us-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: us-west2
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-east1
+  node2: europe-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-east1
+  node2: europe-west2
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-east1
+  node2: europe-west3
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-east1
+  node2: europe-north1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-east1
+  node2: europe-south1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-northeast1
+  node2: europe-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-northeast1
+  node2: europe-west2
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-northeast1
+  node2: europe-west3
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-northeast1
+  node2: europe-north1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-northeast1
+  node2: europe-south1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-southeast1
+  node2: europe-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-southeast1
+  node2: europe-west2
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-southeast1
+  node2: europe-west3
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-southeast1
+  node2: europe-north1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-southeast1
+  node2: europe-south1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: europe-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: europe-west2
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: europe-west3
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: europe-north1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: europe-south1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-east1
+  node2: asia-northeast1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-east1
+  node2: asia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-east1
+  node2: asia-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-northeast1
+  node2: asia-east1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-northeast1
+  node2: asia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-northeast1
+  node2: asia-west1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-southeast1
+  node2: asia-east1
+- attributes:
+    cost: 0.08
+    latency: 80
+  node1: asia-southeast1
+  node2: asia-northeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-southeast1
+  node2: asia-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: asia-east1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: asia-northeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: asia-southeast1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-east1
+  node2: asia-southeast2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-northeast1
+  node2: asia-southeast2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast1
+  node2: asia-southeast2
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: asia-southeast2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-east1
+  node2: australia-southeast1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-northeast1
+  node2: australia-southeast1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast1
+  node2: australia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: australia-southeast1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: asia-east1
+  node2: southamerica-east1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: asia-northeast1
+  node2: southamerica-east1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: asia-southeast1
+  node2: southamerica-east1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: asia-west1
+  node2: southamerica-east1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-east1
+  node2: africa-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-northeast1
+  node2: africa-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-southeast1
+  node2: africa-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-west1
+  node2: africa-west1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast2
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast2
+  node2: us-east1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast2
+  node2: us-west1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast2
+  node2: us-west2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast2
+  node2: europe-west1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast2
+  node2: europe-west2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast2
+  node2: europe-west3
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast2
+  node2: europe-north1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast2
+  node2: europe-south1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast2
+  node2: asia-east1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast2
+  node2: asia-northeast1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast2
+  node2: asia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: asia-southeast2
+  node2: asia-west1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: asia-southeast2
+  node2: australia-southeast1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: asia-southeast2
+  node2: southamerica-east1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: asia-southeast2
+  node2: africa-west1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: australia-southeast1
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: australia-southeast1
+  node2: us-east1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: australia-southeast1
+  node2: us-west1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: australia-southeast1
+  node2: us-west2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: australia-southeast1
+  node2: europe-west1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: australia-southeast1
+  node2: europe-west2
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: australia-southeast1
+  node2: europe-west3
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: australia-southeast1
+  node2: europe-north1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: australia-southeast1
+  node2: europe-south1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: australia-southeast1
+  node2: asia-east1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: australia-southeast1
+  node2: asia-northeast1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: australia-southeast1
+  node2: asia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: australia-southeast1
+  node2: asia-west1
+- attributes:
+    cost: 0.1
+    latency: 100
+  node1: australia-southeast1
+  node2: asia-southeast2
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: australia-southeast1
+  node2: southamerica-east1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: australia-southeast1
+  node2: africa-west1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: us-east1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: us-west1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: us-west2
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: europe-west1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: europe-west2
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: europe-west3
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: europe-north1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: europe-south1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: asia-east1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: asia-northeast1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: asia-southeast1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: asia-west1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: asia-southeast2
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: australia-southeast1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: southamerica-east1
+  node2: africa-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: africa-west1
+  node2: northamerica-northeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: africa-west1
+  node2: us-east1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: africa-west1
+  node2: us-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: africa-west1
+  node2: us-west2
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: africa-west1
+  node2: europe-west1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: africa-west1
+  node2: europe-west2
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: africa-west1
+  node2: europe-west3
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: africa-west1
+  node2: europe-north1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: africa-west1
+  node2: europe-south1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: africa-west1
+  node2: asia-east1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: africa-west1
+  node2: asia-northeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: africa-west1
+  node2: asia-southeast1
+- attributes:
+    cost: 0.11
+    latency: 110
+  node1: africa-west1
+  node2: asia-west1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: africa-west1
+  node2: asia-southeast2
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: africa-west1
+  node2: australia-southeast1
+- attributes:
+    cost: 0.14
+    latency: 140
+  node1: africa-west1
+  node2: southamerica-east1
