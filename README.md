@@ -9,7 +9,6 @@ When using Docker Compose for development, it's useful to just simply link the r
 ## Run
 
 Note that the [requirements.txt](requirements.txt) and this [section](#run) only considers the running of the API and its testbed.
-Other utilities such as the plotter may require additional dependencies.
 
 ### Docker (preferred)
 
@@ -19,7 +18,13 @@ Or run the latest published version from [Docker Hub](https://hub.docker.com/r/z
  * Pull the image: `docker pull zoltan120/cdn-optimization`
 
 After acquiring an image, run a container instance of it:
- * Run a container: `docker run --name cdn-api --rm -p 80:80 cdn-optimization`
+ * Run a container: `docker run --rm -p 80:80 -e TOPOFILE=small_topo.yaml -v ./datasource:/code/datasource --name cdn-api cdn-optimization`
+
+| Parameter | Function |
+| :----: | --- |
+| `-p 80` | API server |
+| `-e TOPOFILE=small_topo.yaml` | for changing the network topology used by the API |
+| `-v /code/datasource` | Location of graph and topology descriptions on disk. |
 
 ### Locally
  * Create a virtual environment: `python -m venv venv`
