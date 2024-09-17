@@ -3,10 +3,10 @@ api: "opti"
 # ffmpeg, clock, gst
 mode: "gst"
 first_hop_relay:
-    - relayid: 1
+    - relayid: "node1"
       track: "bbb-640x360-10"
 last_hop_relay:
-    - relayid: 5
+    - relayid: "node5"
       track: "bbb-640x360-10"
 
 nodes:

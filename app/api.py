@@ -176,7 +176,8 @@ async def get_origin(relayid: str, namespace: str):
             relay_out = i
 
     if response != None:
-        response_json = {"url": f"https://10.3.0.{relay_out}/"}
+        response_json = {"url": f"https://10.3.0.{relay_out}:4443/"}
+        print(response_json)
         return JSONResponse(content=response_json, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
     else:
         raise HTTPException(status_code=response.status_code, detail=response.text)
