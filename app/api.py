@@ -6,24 +6,20 @@ from app.plot import PlotterType, get_plotter
 from model import Track
 from solver import SingleTrackOptimizerType, SingleTrackSolution, get_single_track_optimizer
 
-# This is a static network. TODO: Make it dynamic, use a database.
 from sample2 import make_network
 from fastapi import Body
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-import httpx
 import os
+
 
 # This will be our in-memory database. TODO: Use a real database
 tracks: dict[str, Track] = {}
 # This will be our in-memory cache. TODO: Use a real database
 used_links_per_track: dict[str, list[tuple[str, str]]] = {}
 
-
 topo = os.getenv("TOPOFILE", "./datasource/small_topo.yaml")
-
 network = make_network(topo)
-
 
 app = FastAPI()
 
@@ -53,17 +49,14 @@ class Origin(BaseModel):
     url: str
 
 
-
-
 def get_track_namespace(track_namespace: str) -> str:
     return f"{track_namespace}"
 
 
 @app.get("/network", status_code=status.HTTP_200_OK)
 async def get_network() -> NetworkDTO:
-    nodes = list(map(lambda node_attr: NodeDTO(name=node_attr[0] ,attributes=node_attr[1]), network.nodes(data=True)))
-    edges = list(map(lambda edge_attr: EdgeDTO(
-        src=edge_attr[0], dst=edge_attr[1], attributes=edge_attr[2]), network.edges(data=True)))
+    nodes = list(map(lambda node_attr: NodeDTO(name=node_attr[0], attributes=node_attr[1]), network.nodes(data=True)))
+    edges = list(map(lambda edge_attr: EdgeDTO(src=edge_attr[0], dst=edge_attr[1], attributes=edge_attr[2]), network.edges(data=True)))
     return NetworkDTO(nodes=nodes, edges=edges)
 
 
@@ -125,24 +118,23 @@ async def subscribe_to_track(track_namespace: str, subscriber: str,
     if track is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Track namespace not found")
-    # if subscriber in track.subscribers:
-    #     raise HTTPException(status_code=status.HTTP_304_NOT_MODIFIED,
-    #                         detail="Relay is already in track namespace")
 
-    track.add_subscriber(subscriber)
+    # Memoization of used links per track
+    if subscriber not in track.subscribers:
+        track.add_subscriber(subscriber)
 
-    solution = optimize(network, track, optimizer_type, reduce_network)
-    if not solution.success:
-        raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Optimization failed")
+        solution = optimize(network, track, optimizer_type, reduce_network)
+        if not solution.success:
+            raise HTTPException(
+                status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Optimization failed")
 
-    used_links_per_track[track_namespace] = solution.used_links
+        used_links_per_track[track_namespace] = solution.used_links
+
     next_hop = next(map(lambda edge: edge[0], filter(
-        lambda edge, subscriber=subscriber: edge[1] == subscriber, solution.used_links)), None)
+        lambda edge, subscriber=subscriber: edge[1] == subscriber, used_links_per_track[track_namespace])), None)
     if next_hop == None:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
                             detail="Next hop cannot be determined")
-
     return next_hop
 
 
@@ -158,21 +150,20 @@ async def unsubscribe_to_track(track_namespace: str, subscriber: str):
 
     track.remove_subscriber(subscriber)
 
-@app.get("/origin/{relayid}/{namespace}")
-async def get_origin(relayid: str, namespace: str):
-    nodes = network.nodes()
-    if len(nodes) < int(relayid):
-        raise HTTPException(status_code=response.status_code, detail="no such relay")
 
-    relay_in = list(nodes)[int(relayid) - 1]
-    if relay_in is None:
+@app.get("/origin/{relay_id}/{namespace}")
+async def get_origin(relay_id: int, namespace: str):
+    nodes = network.nodes
+
+    if relay_id > len(nodes):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such relay")
-
-
-
+    relay_in = list(nodes)[relay_id - 1]
+    
     response = await subscribe_to_track(track_namespace=namespace, subscriber=relay_in)
-    relay_out_id = int(list(nodes).index(response)) + 1
-    if relay_out_id is None:
+
+    try:
+        relay_out_id = list(nodes).index(response) + 1
+    except ValueError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such relay")
     
     if response != None:
@@ -181,31 +172,30 @@ async def get_origin(relayid: str, namespace: str):
     else:
         raise HTTPException(status_code=response.status_code, detail=response.text)
 
-@app.post("/origin/{relayid}/{namespace}", status_code=status.HTTP_200_OK)
-async def set_origin(relayid: str, namespace: str, origin: Annotated[Origin, Body()]):
-    nodes = network.nodes(data=True)
-    if len(nodes) < int(relayid):
-        raise HTTPException(status_code=response.status_code, detail="no such relay")
 
-    with httpx.Client():
-        delay_budget = namespace.split("_")[1] if "_" in namespace else 0.0
-        relay = next((node[0] for i, node in enumerate(network.nodes(data=True), start=1) if i == int(relayid)), None)
-        if relay is None:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such relay")
-        response = await create_track(
-            track_namespace=namespace,
-            track_dto=TrackDTO(
-                #name=namespace,
-                publisher=relay,
-                delay_budget=delay_budget
-            ))
+@app.post("/origin/{relay_id}/{namespace}", status_code=status.HTTP_200_OK)
+async def set_origin(relay_id: int, namespace: str, origin: Annotated[Origin, Body()]):
+    nodes = network.nodes
+
+    if relay_id > len(nodes):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such relay")
+    relay = list(nodes)[relay_id - 1]
+    
+    delay_budget = float(namespace.split("_")[1]) if "_" in namespace else 0.0
+
+    response = await create_track(
+        track_namespace=namespace,
+        track_dto=TrackDTO(
+            publisher=relay,
+            delay_budget=delay_budget
+        ))
     if response != None:
-        response_json = {"url": f"https://10.3.0.{relayid}/"}
+        response_json = {"url": f"https://10.3.0.{relay_id}/"}
         return JSONResponse(content=response_json)
     else:
         raise HTTPException(status_code=response.status_code, detail=response.text)
     
-@app.delete("/origin/{relayid}/{namespace}", status_code=status.HTTP_200_OK)
-async def del_origin(relayid: str, namespace: str, origin: Annotated[Origin, Body()]):
-    unsubscribe_to_track(track_namespace=namespace, subscriber=relayid)
 
+@app.delete("/origin/{relayid}/{namespace}", status_code=status.HTTP_204_NO_CONTENT)
+async def del_origin(relayid: int, namespace: str, origin: Annotated[Origin, Body()]):
+    await unsubscribe_to_track(track_namespace=namespace, subscriber=relayid)
