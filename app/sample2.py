@@ -1,6 +1,6 @@
 from model import create_graph, display_triangle_inequality_satisfaction
 import yaml
-# Hardcoded sample network based on VM-VM data transfer pricing within Google Cloud regions.
+
 
 def make_network(file_path: str = 'datasource/small_topo.yaml'):
     with open(file_path, 'r') as file:

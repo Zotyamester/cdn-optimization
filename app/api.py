@@ -160,24 +160,23 @@ async def unsubscribe_to_track(track_namespace: str, subscriber: str):
 
 @app.get("/origin/{relayid}/{namespace}")
 async def get_origin(relayid: str, namespace: str):
-    nodes = network.nodes(data=True)
+    nodes = network.nodes()
     if len(nodes) < int(relayid):
         raise HTTPException(status_code=response.status_code, detail="no such relay")
 
-    relay_in = None
-    for i, node in enumerate(nodes, start=1):
-        if (str(i) == relayid) & (relay_in == None):
-            relay_in = node[0]
+    relay_in = list(nodes)[int(relayid) - 1]
+    if relay_in is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such relay")
+
+
 
     response = await subscribe_to_track(track_namespace=namespace, subscriber=relay_in)
-    relay_out  = None
-    for i, node in enumerate(nodes, start=1):
-        if (node[0] == response) & (relay_out == None):
-            relay_out = i
-
+    relay_out_id = int(list(nodes).index(response)) + 1
+    if relay_out_id is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such relay")
+    
     if response != None:
-        response_json = {"url": f"https://10.3.0.{relay_out}:4443/"}
-        print(response_json)
+        response_json = {"url": f"https://10.3.0.{relay_out_id}:4443/"}
         return JSONResponse(content=response_json, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
     else:
         raise HTTPException(status_code=response.status_code, detail=response.text)
@@ -188,7 +187,7 @@ async def set_origin(relayid: str, namespace: str, origin: Annotated[Origin, Bod
     if len(nodes) < int(relayid):
         raise HTTPException(status_code=response.status_code, detail="no such relay")
 
-    async with httpx.AsyncClient():
+    with httpx.Client():
         delay_budget = namespace.split("_")[1] if "_" in namespace else 0.0
         relay = next((node[0] for i, node in enumerate(network.nodes(data=True), start=1) if i == int(relayid)), None)
         if relay is None:
@@ -196,7 +195,7 @@ async def set_origin(relayid: str, namespace: str, origin: Annotated[Origin, Bod
         response = await create_track(
             track_namespace=namespace,
             track_dto=TrackDTO(
-                name=namespace,
+                #name=namespace,
                 publisher=relay,
                 delay_budget=delay_budget
             ))
@@ -205,6 +204,7 @@ async def set_origin(relayid: str, namespace: str, origin: Annotated[Origin, Bod
         return JSONResponse(content=response_json)
     else:
         raise HTTPException(status_code=response.status_code, detail=response.text)
+    
 @app.delete("/origin/{relayid}/{namespace}", status_code=status.HTTP_200_OK)
 async def del_origin(relayid: str, namespace: str, origin: Annotated[Origin, Body()]):
     unsubscribe_to_track(track_namespace=namespace, subscriber=relayid)
