@@ -7,21 +7,6 @@ from plot import basemap_plot_network, save_plot
 from model import default_calculate_latency, default_calculate_cost, display_triangle_inequality_satisfaction, load_graphml
 
 
-cdn_nodes = [
-    # European nodes
-    ("eu-west-1",    {"location": (53.3498, -6.2603)}),    # Dublin, IE
-    ("eu-west-2",    {"location": (51.5074, -0.1278)}),    # London, GB
-    ("eu-west-3",    {"location": (48.8566, 2.3522)}),     # Paris, FR
-    ("eu-central-1", {"location": (50.1109, 8.6821)}),     # Frankfurt, DE
-    ("eu-north-1",   {"location": (59.3293, 18.0686)}),    # Stockholm, SE
-    ("eu-south-1",   {"location": (45.4642, 9.1900)}),     # Milan, IT
-    # American nodes
-    ("us-east-1",    {"location": (39.0481, -77.4729)}),   # Northern Virginia, US
-    ("us-west-1",    {"location": (37.7749, -122.4194)}),  # San Francisco, US
-    ("us-west-2",    {"location": (45.5231, -122.6765)}),  # Oregon, US
-]
-
-
 def find_closest_node(network: nx.DiGraph, cdn_node_data: dict) -> str:
     closest_node = None
     distance = math.inf
@@ -34,14 +19,12 @@ def find_closest_node(network: nx.DiGraph, cdn_node_data: dict) -> str:
     return closest_node
 
 
-def load_base_network(base_network_path: str,
+def load_base_network(base_network: nx.DiGraph,
+                      network_name: str,
                       calculate_latency: Callable[[nx.DiGraph, str, str], float] = default_calculate_latency,
                       calculate_cost: Callable[[nx.DiGraph, str, str], float] = default_calculate_cost) -> nx.DiGraph:
-    base_network = load_graphml(base_network_path, calculate_latency, calculate_cost)
-
-    # Prefix node names with base filename (without extension)
-    common_node_name_prefix = Path(base_network_path).stem.lower() + "_"
-    nx.relabel_nodes(base_network, {node: common_node_name_prefix + node for node in base_network.nodes}, False)
+    common_node_name_prefix = network_name.lower() + "_"
+    nx.relabel_nodes(base_network, {node: common_node_name_prefix + str(node) for node in base_network.nodes}, False)
 
     return base_network
 
@@ -115,15 +98,19 @@ def create_overlay_network(underlay_network: nx.DiGraph, cdn_nodes: list[tuple[s
     return overlay_network
 
 
-base_network = load_base_network("./datasource/Cogentco.graphml")
-underlay_network = create_underlay_network(base_network, cdn_nodes)
-mapping = create_virtual_to_physical_mapping(underlay_network, cdn_nodes)
-overlay_network = create_overlay_network(underlay_network, cdn_nodes, mapping)
-
-# To remain compatible with the other samples provided.
-network = overlay_network
-
 if __name__ == "__main__":
+    cdn_nodes = [
+        ("CDN1", {"location": (52.5200, 13.4050)}),
+        ("CDN2", {"location": (48.8566, 2.3522)}),
+        ("CDN3", {"location": (51.5074, 0.1278)}),
+        ("CDN4", {"location": (40.7128, -74.0060)}),
+        ("CDN5", {"location": (34.0522, -118.243)}),
+    ]
+    base_network = load_base_network("./datasource/Cogentco.graphml")
+    underlay_network = create_underlay_network(base_network, cdn_nodes)
+    mapping = create_virtual_to_physical_mapping(underlay_network, cdn_nodes)
+    overlay_network = create_overlay_network(underlay_network, cdn_nodes, mapping)
+    network = overlay_network
     display_triangle_inequality_satisfaction(network)
 
     # Special visualization for the underlay-overlay network:

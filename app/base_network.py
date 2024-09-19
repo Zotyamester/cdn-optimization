@@ -2,7 +2,7 @@ import itertools
 import networkx as nx
 
 from plot import basemap_plot_network, save_plot
-from calculated_sample import create_overlay_network, create_underlay_network, create_virtual_to_physical_mapping
+from overlay_underlay import create_overlay_network, create_underlay_network, create_virtual_to_physical_mapping
 from solver import MultiTrackOptimizerType, SingleTrackOptimizerType, get_multi_track_optimizer, get_single_track_optimizer
 from model import default_calculate_latency
 from traffic import choose_peers, generate_broadcast_traffic, generate_circle_edge_relays, generate_point_of_presence_relays

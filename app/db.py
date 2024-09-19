@@ -1,7 +1,9 @@
 from functools import reduce
 import os
 from sqlmodel import Field, Relationship, Session, SQLModel, create_engine, select, delete
-from gcp_sample import network as model
+
+
+model = ...
 
 
 class Network(SQLModel, table=True):

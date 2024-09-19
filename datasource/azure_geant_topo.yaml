@@ -1,0 +1,492 @@
+edges:
+- attributes:
+    cost: 1.0
+    latency: 2.490851441445682
+  node1: North_Europe
+  node2: UK_South
+- attributes:
+    cost: 1.02
+    latency: 59.67719635613397
+  node1: North_Europe
+  node2: France_Central
+- attributes:
+    cost: 1.0224999999999997
+    latency: 60.545257685325204
+  node1: North_Europe
+  node2: Germany_West_Central
+- attributes:
+    cost: 2.2
+    latency: 25.09906450314304
+  node1: North_Europe
+  node2: Sweden_Central
+- attributes:
+    cost: 1.0924999999999996
+    latency: 80.85649585079855
+  node1: North_Europe
+  node2: Switzerland_North
+- attributes:
+    cost: 1.015
+    latency: 92.01041927621677
+  node1: North_Europe
+  node2: East_US
+- attributes:
+    cost: 3.3633333333333333
+    latency: 194.8394686144747
+  node1: North_Europe
+  node2: West_US
+- attributes:
+    cost: 1.015
+    latency: 96.11001225616242
+  node1: North_Europe
+  node2: Central_US
+- attributes:
+    cost: 3.3633333333333333
+    latency: 197.71773513034046
+  node1: North_Europe
+  node2: West_US_2
+- attributes:
+    cost: 1.0
+    latency: 2.490851441445682
+  node1: UK_South
+  node2: North_Europe
+- attributes:
+    cost: 0.02
+    latency: 57.36359827991902
+  node1: UK_South
+  node2: France_Central
+- attributes:
+    cost: 0.022500000000000003
+    latency: 58.23165960911025
+  node1: UK_South
+  node2: Germany_West_Central
+- attributes:
+    cost: 1.2
+    latency: 22.785466426928096
+  node1: UK_South
+  node2: Sweden_Central
+- attributes:
+    cost: 0.0925
+    latency: 78.54289777458361
+  node1: UK_South
+  node2: Switzerland_North
+- attributes:
+    cost: 0.015
+    latency: 89.6968212000018
+  node1: UK_South
+  node2: East_US
+- attributes:
+    cost: 2.3633333333333337
+    latency: 192.52587053825977
+  node1: UK_South
+  node2: West_US
+- attributes:
+    cost: 0.015
+    latency: 93.79641417994746
+  node1: UK_South
+  node2: Central_US
+- attributes:
+    cost: 2.3633333333333337
+    latency: 195.40413705412553
+  node1: UK_South
+  node2: West_US_2
+- attributes:
+    cost: 1.02
+    latency: 59.67719635613396
+  node1: France_Central
+  node2: North_Europe
+- attributes:
+    cost: 0.02
+    latency: 57.36359827991902
+  node1: France_Central
+  node2: UK_South
+- attributes:
+    cost: 0.02
+    latency: 2.4021992539810264
+  node1: France_Central
+  node2: Germany_West_Central
+- attributes:
+    cost: 1.22
+    latency: 79.97181134161637
+  node1: France_Central
+  node2: Sweden_Central
+- attributes:
+    cost: 0.09
+    latency: 22.713437419454383
+  node1: France_Central
+  node2: Switzerland_North
+- attributes:
+    cost: 0.02
+    latency: 31.59733934981445
+  node1: France_Central
+  node2: East_US
+- attributes:
+    cost: 2.3833333333333333
+    latency: 249.71221545294804
+  node1: France_Central
+  node2: West_US
+- attributes:
+    cost: 0.02
+    latency: 35.696932329760116
+  node1: France_Central
+  node2: Central_US
+- attributes:
+    cost: 2.3833333333333333
+    latency: 252.5904819688138
+  node1: France_Central
+  node2: West_US_2
+- attributes:
+    cost: 1.0225
+    latency: 60.545257685325204
+  node1: Germany_West_Central
+  node2: North_Europe
+- attributes:
+    cost: 0.0225
+    latency: 58.23165960911026
+  node1: Germany_West_Central
+  node2: UK_South
+- attributes:
+    cost: 0.02
+    latency: 2.4021992539810264
+  node1: Germany_West_Central
+  node2: France_Central
+- attributes:
+    cost: 1.2225
+    latency: 80.83987267080761
+  node1: Germany_West_Central
+  node2: Sweden_Central
+- attributes:
+    cost: 0.07
+    latency: 20.317746424485936
+  node1: Germany_West_Central
+  node2: Switzerland_North
+- attributes:
+    cost: 0.03
+    latency: 35.52697531787731
+  node1: Germany_West_Central
+  node2: East_US
+- attributes:
+    cost: 2.3833333333333333
+    latency: 215.15578406947935
+  node1: Germany_West_Central
+  node2: West_US
+- attributes:
+    cost: 0.03
+    latency: 39.62656829782298
+  node1: Germany_West_Central
+  node2: Central_US
+- attributes:
+    cost: 2.3833333333333333
+    latency: 218.0340505853451
+  node1: Germany_West_Central
+  node2: West_US_2
+- attributes:
+    cost: 2.2
+    latency: 25.099064503143037
+  node1: Sweden_Central
+  node2: North_Europe
+- attributes:
+    cost: 1.2000000000000002
+    latency: 22.785466426928092
+  node1: Sweden_Central
+  node2: UK_South
+- attributes:
+    cost: 1.2200000000000002
+    latency: 79.97181134161636
+  node1: Sweden_Central
+  node2: France_Central
+- attributes:
+    cost: 1.2225
+    latency: 80.83987267080761
+  node1: Sweden_Central
+  node2: Germany_West_Central
+- attributes:
+    cost: 1.2924999999999998
+    latency: 101.15111083628096
+  node1: Sweden_Central
+  node2: Switzerland_North
+- attributes:
+    cost: 1.215
+    latency: 112.30503426169918
+  node1: Sweden_Central
+  node2: East_US
+- attributes:
+    cost: 3.5633333333333335
+    latency: 215.13408359995708
+  node1: Sweden_Central
+  node2: West_US
+- attributes:
+    cost: 1.215
+    latency: 116.40462724164483
+  node1: Sweden_Central
+  node2: Central_US
+- attributes:
+    cost: 3.5633333333333335
+    latency: 218.01235011582284
+  node1: Sweden_Central
+  node2: West_US_2
+- attributes:
+    cost: 1.0925
+    latency: 80.85649585079855
+  node1: Switzerland_North
+  node2: North_Europe
+- attributes:
+    cost: 0.09250000000000001
+    latency: 78.54289777458361
+  node1: Switzerland_North
+  node2: UK_South
+- attributes:
+    cost: 0.09
+    latency: 22.71343741945438
+  node1: Switzerland_North
+  node2: France_Central
+- attributes:
+    cost: 0.07
+    latency: 20.317746424485932
+  node1: Switzerland_North
+  node2: Germany_West_Central
+- attributes:
+    cost: 1.2925
+    latency: 101.15111083628096
+  node1: Switzerland_North
+  node2: Sweden_Central
+- attributes:
+    cost: 0.1
+    latency: 55.838213483350664
+  node1: Switzerland_North
+  node2: East_US
+- attributes:
+    cost: 2.4533333333333336
+    latency: 235.4670222349527
+  node1: Switzerland_North
+  node2: West_US
+- attributes:
+    cost: 0.1
+    latency: 59.93780646329633
+  node1: Switzerland_North
+  node2: Central_US
+- attributes:
+    cost: 2.4533333333333336
+    latency: 238.34528875081847
+  node1: Switzerland_North
+  node2: West_US_2
+- attributes:
+    cost: 1.015
+    latency: 92.01041927621675
+  node1: East_US
+  node2: North_Europe
+- attributes:
+    cost: 0.015000000000000001
+    latency: 89.6968212000018
+  node1: East_US
+  node2: UK_South
+- attributes:
+    cost: 0.02
+    latency: 31.59733934981445
+  node1: East_US
+  node2: France_Central
+- attributes:
+    cost: 0.030000000000000002
+    latency: 35.52697531787731
+  node1: East_US
+  node2: Germany_West_Central
+- attributes:
+    cost: 1.215
+    latency: 112.30503426169916
+  node1: East_US
+  node2: Sweden_Central
+- attributes:
+    cost: 0.1
+    latency: 55.83821348335067
+  node1: East_US
+  node2: Switzerland_North
+- attributes:
+    cost: 2.3783333333333334
+    latency: 282.04543837303083
+  node1: East_US
+  node2: West_US
+- attributes:
+    cost: 0.0
+    latency: 5.477486264322734
+  node1: East_US
+  node2: Central_US
+- attributes:
+    cost: 2.3783333333333334
+    latency: 284.92370488889657
+  node1: East_US
+  node2: West_US_2
+- attributes:
+    cost: 3.363333333333333
+    latency: 194.83946861447473
+  node1: West_US
+  node2: North_Europe
+- attributes:
+    cost: 2.363333333333333
+    latency: 192.52587053825977
+  node1: West_US
+  node2: UK_South
+- attributes:
+    cost: 2.3833333333333324
+    latency: 249.71221545294804
+  node1: West_US
+  node2: France_Central
+- attributes:
+    cost: 2.3833333333333324
+    latency: 215.15578406947938
+  node1: West_US
+  node2: Germany_West_Central
+- attributes:
+    cost: 3.563333333333333
+    latency: 215.1340835999571
+  node1: West_US
+  node2: Sweden_Central
+- attributes:
+    cost: 2.453333333333332
+    latency: 235.46702223495274
+  node1: West_US
+  node2: Switzerland_North
+- attributes:
+    cost: 2.3783333333333325
+    latency: 282.04543837303083
+  node1: West_US
+  node2: East_US
+- attributes:
+    cost: 2.3783333333333325
+    latency: 286.1450313529765
+  node1: West_US
+  node2: Central_US
+- attributes:
+    cost: 0.0
+    latency: 33.24884019170539
+  node1: West_US
+  node2: West_US_2
+- attributes:
+    cost: 1.015
+    latency: 96.11001225616242
+  node1: Central_US
+  node2: North_Europe
+- attributes:
+    cost: 0.015000000000000001
+    latency: 93.79641417994748
+  node1: Central_US
+  node2: UK_South
+- attributes:
+    cost: 0.02
+    latency: 35.69693232976012
+  node1: Central_US
+  node2: France_Central
+- attributes:
+    cost: 0.030000000000000002
+    latency: 39.62656829782298
+  node1: Central_US
+  node2: Germany_West_Central
+- attributes:
+    cost: 1.215
+    latency: 116.40462724164483
+  node1: Central_US
+  node2: Sweden_Central
+- attributes:
+    cost: 0.1
+    latency: 59.93780646329634
+  node1: Central_US
+  node2: Switzerland_North
+- attributes:
+    cost: 0.0
+    latency: 5.477486264322734
+  node1: Central_US
+  node2: East_US
+- attributes:
+    cost: 2.3783333333333334
+    latency: 286.1450313529765
+  node1: Central_US
+  node2: West_US
+- attributes:
+    cost: 2.3783333333333334
+    latency: 289.02329786884223
+  node1: Central_US
+  node2: West_US_2
+- attributes:
+    cost: 3.363333333333333
+    latency: 197.7177351303405
+  node1: West_US_2
+  node2: North_Europe
+- attributes:
+    cost: 2.363333333333333
+    latency: 195.40413705412553
+  node1: West_US_2
+  node2: UK_South
+- attributes:
+    cost: 2.3833333333333324
+    latency: 252.5904819688138
+  node1: West_US_2
+  node2: France_Central
+- attributes:
+    cost: 2.3833333333333324
+    latency: 218.0340505853451
+  node1: West_US_2
+  node2: Germany_West_Central
+- attributes:
+    cost: 3.563333333333333
+    latency: 218.01235011582287
+  node1: West_US_2
+  node2: Sweden_Central
+- attributes:
+    cost: 2.453333333333332
+    latency: 238.34528875081847
+  node1: West_US_2
+  node2: Switzerland_North
+- attributes:
+    cost: 2.3783333333333325
+    latency: 284.92370488889657
+  node1: West_US_2
+  node2: East_US
+- attributes:
+    cost: 0.0
+    latency: 33.24884019170539
+  node1: West_US_2
+  node2: West_US
+- attributes:
+    cost: 2.3783333333333325
+    latency: 289.02329786884223
+  node1: West_US_2
+  node2: Central_US
+nodes:
+- location:
+  - 53.3478
+  - -6.2597
+  name: North_Europe
+- location:
+  - 51.5074
+  - -0.1278
+  name: UK_South
+- location:
+  - 48.8566
+  - 2.3522
+  name: France_Central
+- location:
+  - 50.1109
+  - 8.6821
+  name: Germany_West_Central
+- location:
+  - 59.3293
+  - 18.0686
+  name: Sweden_Central
+- location:
+  - 47.3769
+  - 8.5417
+  name: Switzerland_North
+- location:
+  - 37.9269
+  - -78.024
+  name: East_US
+- location:
+  - 37.7749
+  - -122.4194
+  name: West_US
+- location:
+  - 41.8781
+  - -87.6298
+  name: Central_US
+- location:
+  - 45.5122
+  - -122.6587
+  name: West_US_2

@@ -1,5 +1,6 @@
 import itertools
 from collections import defaultdict
+import json
 import random
 from typing import Callable
 
@@ -29,7 +30,7 @@ def load_graphml(graph_path: str,
                  calculate_cost: Callable[[nx.DiGraph, str, str], float] = default_calculate_cost) -> nx.DiGraph:
     mapped_graph = nx.DiGraph()
 
-    graph: nx.Graph = nx.read_graphml(graph_path)
+    graph: nx.DiGraph = nx.read_graphml(graph_path)
 
     # Add the nodes from the base graph.
     for node, data in graph.nodes(data=True):
@@ -38,7 +39,7 @@ def load_graphml(graph_path: str,
             mapped_graph.add_node(node, location=location)
 
     # Add the edges from the base graph.
-    for node1, node2 in graph.edges(data=False):
+    for node1, node2 in graph.edges:
         if node1 in mapped_graph.nodes and node2 in mapped_graph.nodes:
             forward_edge = (node1, node2)
             mapped_graph.add_edge(
@@ -56,6 +57,40 @@ def load_graphml(graph_path: str,
 
     return mapped_graph
 
+def load_geant_json(graph_path: str,
+                    calculate_latency: Callable[[nx.DiGraph, str, str], float] = default_calculate_latency) -> nx.DiGraph:
+    graph: nx.DiGraph = nx.DiGraph()
+
+    with open(graph_path, "r") as json_file:
+        model = json.load(json_file)
+
+    for node in model["cities"]:
+        graph.add_node(node["id"], location=(float(node["lat"]), float(node["long"])))
+    
+    for links in model["links"].values():
+        for link in links:
+            node1 = link["endpoint1_id"]
+            node2 = link["endpoint2_id"]
+
+            REFERENCE_BANDWIDTH = 10e9  # 1 Gbps is a reasonable baseline for link capacity
+            capacity_in_gigabits = float(link["capacity"]) * 10e6  # the values are provided in Mbps, so we convert to Gbps
+            cost = REFERENCE_BANDWIDTH / capacity_in_gigabits  # make cost inversely proportional to capacity
+
+            forward_edge = (node1, node2)
+            graph.add_edge(
+                *forward_edge,
+                latency=calculate_latency(graph, *forward_edge),
+                cost=cost
+            )
+
+            reverse_edge = (node2, node1)
+            graph.add_edge(
+                *reverse_edge,
+                latency=calculate_latency(graph, *reverse_edge),
+                cost=cost
+            )
+    
+    return graph
 
 def create_graph(nodes: list[tuple[str, dict]],
                  calculate_latency: Callable[[

@@ -3,7 +3,8 @@ import sys
 import time
 import requests
 
-BASE_URL = "http://127.0.0.1:800%d" % int(sys.argv[1] if len(sys.argv) > 1 else '0')
+PORT = int(sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] >= 0 and sys.argv[1] < 65536 else '80')
+BASE_URL = "http://127.0.0.1:%d" % PORT
 
 network = requests.get(f"{BASE_URL}/network").json()
 nodes = list(map(lambda obj: obj["name"], network["nodes"]))
