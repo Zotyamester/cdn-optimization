@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+from random import randint, seed
 import time
 from argparse import ArgumentParser
 
@@ -8,10 +9,9 @@ import networkx as nx
 
 from model import Track, display_network_links, display_tracks_stats
 from plot import PlotterType, get_plotter, save_plot
-from sample import network
+from sample import load_network
 from solver import MultiTrackOptimizerType, SingleTrackOptimizerType, get_multi_track_optimizer, get_single_track_optimizer
-from traffic import (generate_broadcast_traffic,
-                     generate_video_conference_traffic)
+from traffic import choose_peers, generate_broadcast_traffic, generate_full_mesh_traffic
 
 CACHE_DIR = "./cache"
 PLOT_DIR = "./plots"
@@ -60,8 +60,10 @@ def get_optimal_topology(network: nx.DiGraph, tracks: dict[str, Track], use_cach
         if debug:
             print("Computing...")
 
-        single_track_optimizer = get_single_track_optimizer(single_track_optimizer_type)
-        multi_track_optimizer = get_multi_track_optimizer(multi_track_optimizer_type, single_track_optimizer=single_track_optimizer)
+        single_track_optimizer = get_single_track_optimizer(
+            single_track_optimizer_type)
+        multi_track_optimizer = get_multi_track_optimizer(
+            multi_track_optimizer_type, single_track_optimizer=single_track_optimizer)
 
         success, objective, used_links_per_track = multi_track_optimizer(
             network, tracks)
@@ -86,9 +88,9 @@ def generate_sample_traffic(type: str, peers: list[str]) -> dict[str, Track]:
     if type == "live":
         track_id = "live"
         publisher, *subscribers = peers
-        return generate_broadcast_traffic(track_id, publisher, subscribers)
+        return generate_broadcast_traffic(track_id, publisher, subscribers, 500)
     elif type == "video-conference":
-        return generate_video_conference_traffic(peers)
+        return generate_full_mesh_traffic(peers, 200)
     else:
         raise ValueError(f"Unknown traffic type: {type}")
 
@@ -96,10 +98,10 @@ def generate_sample_traffic(type: str, peers: list[str]) -> dict[str, Track]:
 if __name__ == "__main__":
     parser = ArgumentParser(
         description="MoQ Relay Topology Optimization")
+    parser.add_argument("--network", default="small_topo.yaml", help="Network topology file")
     parser.add_argument("--traffic-type",
                         choices=["live", "video-conference"], default="live", help="Type of traffic to generate")
-    parser.add_argument("--peers", nargs="+", default=["us-west1", "us-west2", "us-east1", "europe-south1", "europe-west1", "europe-west2", "europe-west3", "southamerica-east1", "asia-west1", "asia-east1"],
-                        help="Peers to generate traffic for")
+    parser.add_argument("--peers", nargs="+", default=[], help="Peers to generate traffic for")
     parser.add_argument("--use-cache",
                         action="store_true", default=False, help="Cache the results (using the input data as a key)")
     parser.add_argument("--single-track-optimizer",
@@ -109,12 +111,18 @@ if __name__ == "__main__":
                         choices=[opt.name for opt in MultiTrackOptimizerType], default=MultiTrackOptimizerType.ADAPTED.name, help="Multi track optimizer to use")
     parser.add_argument("--debug",
                         action="store_true", default=True, help="Debug mode")
-    parser.add_argument("--plotter", choices=["simple", "basemap"], default="basemap", help="Plotter to use")
+    parser.add_argument(
+        "--plotter", choices=[opt.name for opt in PlotterType], default=PlotterType.BASEMAP.name, help="Plotter to use")
     parser.add_argument("--plot-name", default="plot",
                         help="Name of the plot file (without extension)")
     args = parser.parse_args()
 
-    tracks = generate_sample_traffic(args.traffic_type, args.peers)
+    topology_filename = os.path.join("datasource", os.path.basename("small_topo.yaml"))
+    network = load_network(topology_filename)
+
+    seed(42)
+    peers = args.peers if len(args.peers) >= 2 else choose_peers(network, randint(5, len(network.nodes)))
+    tracks = generate_sample_traffic(args.traffic_type, peers)
 
     if args.debug:
         display_network_links(network)
@@ -137,7 +145,10 @@ if __name__ == "__main__":
         os.mkdir(PLOT_DIR)
 
     plotter = get_plotter(PlotterType[args.plotter])
-    for track_id, used_links in  used_links_per_track.items():
-        image_bytes = plotter(network, set(network.nodes), set(network.edges), set(used_links), "red")
+    for track_id, used_links in used_links_per_track.items():
+        image_bytes = plotter(network, set(network.nodes), set(
+            network.edges), set(used_links), "red")
         filename = f"{PLOT_DIR}/{args.plot_name}-{track_id}.png"
+        if args.debug:
+            print(f"Saving plot to {filename}")
         save_plot(filename, image_bytes)

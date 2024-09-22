@@ -1,7 +1,6 @@
 import itertools
 from collections import defaultdict
 import json
-import random
 from typing import Callable
 
 import geopy.distance

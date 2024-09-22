@@ -5,7 +5,7 @@ from plot import basemap_plot_network, save_plot
 from overlay_underlay import create_overlay_network, create_underlay_network, create_virtual_to_physical_mapping
 from solver import MultiTrackOptimizerType, SingleTrackOptimizerType, get_multi_track_optimizer, get_single_track_optimizer
 from model import default_calculate_latency
-from traffic import choose_peers, generate_broadcast_traffic, generate_circle_edge_relays, generate_point_of_presence_relays
+from traffic import choose_peers, generate_broadcast_traffic, generate_point_of_presence_relays
 
 MAGIC_SEED = 69
 
@@ -18,11 +18,11 @@ def generate_isles(number_of_isles: int, nodes_per_isle: int) -> nx.DiGraph:
     
     graph_of_isles: nx.DiGraph = nx.compose_all(isles)
 
-    # Set inter isle costs
+    # Set intra isle costs
     for u, v in graph_of_isles.edges:
         graph_of_isles.edges[u, v]["cost"] = graph_of_isles.edges[v, u]["cost"] = 1
 
-    # Set intra isle costs (and add those links beforehand)
+    # Set inter isle costs (and add those links beforehand)
     for isle1, isle2 in itertools.combinations(isles, 2):
         node1, node2 = list(isle1.nodes)[0], list(isle2.nodes)[0]
         graph_of_isles.add_edge(node1, node2, cost=nodes_per_isle)
@@ -40,7 +40,7 @@ def generate_isles(number_of_isles: int, nodes_per_isle: int) -> nx.DiGraph:
 
 
 if __name__ == "__main__":
-    number_of_isles, nodes_per_isle = 2, 5
+    number_of_isles, nodes_per_isle = 2, 4
 
     base_network = generate_isles(number_of_isles, nodes_per_isle)
     # cdn_nodes = generate_circle_edge_relays(base_network, number_of_isles * 2)
@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     track_id = "live"
     publisher, *subscribers = choose_peers(network, number_of_isles * 2, seed=MAGIC_SEED)
-    tracks = generate_broadcast_traffic(track_id, publisher, subscribers, delay_budget=2.4)
+    tracks = generate_broadcast_traffic(track_id, publisher, subscribers, 8)
 
     single_track_optimizer = get_single_track_optimizer(SingleTrackOptimizerType.MULTICAST_HEURISTIC)
     multi_track_optimizer = get_multi_track_optimizer(MultiTrackOptimizerType.ADAPTED, single_track_optimizer=single_track_optimizer)

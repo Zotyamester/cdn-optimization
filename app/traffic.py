@@ -4,21 +4,16 @@ import random
 from model import Track
 
 
-def generate_full_mesh_traffic(traffic_name: str, peers: list[str], delay_budget: float):
+def generate_full_mesh_traffic(peers: list[str], delay_budget: float):
     tracks = {}
     for i, peer in enumerate(peers, start=1):
         other_peers = list(filter(lambda x, peer=peer: x != peer, peers))
         tracks[f"t{i}"] = Track(
-            name=f"{traffic_name}-of-{peer}",
             publisher=peer,
             initial_subscribers=other_peers,
             delay_budget=delay_budget
         )
     return tracks
-
-
-def generate_video_conference_traffic(peers: list[str], latency: float = 500):
-    return generate_full_mesh_traffic("video", peers, latency)
 
 
 def generate_broadcast_traffic(track_id: str, publisher: str, subscribers: list[str], delay_budget: float = 2000.0) -> dict[str, Track]:
