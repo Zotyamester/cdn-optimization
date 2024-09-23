@@ -16,7 +16,7 @@ import os
 # This will be our in-memory database. TODO: Use a real database
 tracks: dict[str, Track] = {}
 # This will be our in-memory cache. TODO: Use a real database
-used_links_per_track: dict[str, list[tuple[str, str]]] = {}
+topologies: dict[str, SingleTrackSolution] = {}
 
 topo = os.path.join("datasource", os.getenv("TOPOFILE", "small_topo.yaml"))
 network = load_network(topo)
@@ -44,6 +44,9 @@ class TrackDTO(BaseModel):
     publisher: str
     delay_budget: float
 
+class SingleTrackSolutionDTO(BaseModel):
+    cost: float
+    used_links: list[tuple[str, str]]
     
 class Origin(BaseModel):
     url: str
@@ -82,12 +85,12 @@ async def get_track(track_namespace: str) -> TrackDTO:
 
 
 @app.get("/tracks/{track_namespace}/topology", status_code=status.HTTP_200_OK)
-async def get_topology_for_track(track_namespace: str) -> list:
-    used_links = used_links_per_track.get(track_namespace, None)
-    if used_links is None:
+async def get_topology_for_track(track_namespace: str) -> SingleTrackSolutionDTO:
+    solution = topologies.get(track_namespace, None)
+    if solution is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Track namespace not found")
-    return used_links
+    return SingleTrackSolutionDTO(cost=solution.objective, used_links=solution.used_links)
 
 
 @app.get("/tracks/{track_namespace}/topology/plot", status_code=status.HTTP_200_OK)
@@ -128,10 +131,10 @@ async def subscribe_to_track(track_namespace: str, subscriber: str,
             raise HTTPException(
                 status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Optimization failed")
 
-        used_links_per_track[track_namespace] = solution.used_links
+        topologies[track_namespace] = solution
 
     next_hop = next(map(lambda edge: edge[0], filter(
-        lambda edge, subscriber=subscriber: edge[1] == subscriber, used_links_per_track[track_namespace])), None)
+        lambda edge, subscriber=subscriber: edge[1] == subscriber, topologies[track_namespace].used_links)), None)
     if next_hop == None:
         raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE,
                             detail="Next hop cannot be determined")
