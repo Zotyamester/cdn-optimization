@@ -38,7 +38,7 @@ def load_graphml(graph_path: str,
             mapped_graph.add_node(node, location=location)
 
     # Add the edges from the base graph.
-    for node1, node2 in graph.edges:
+    for node1, node2 in graph.edges(data=False):
         if node1 in mapped_graph.nodes and node2 in mapped_graph.nodes:
             forward_edge = (node1, node2)
             mapped_graph.add_edge(
@@ -73,7 +73,7 @@ def load_geant_json(graph_path: str,
 
             REFERENCE_BANDWIDTH = 10e9  # 1 Gbps is a reasonable baseline for link capacity
             capacity_in_gigabits = float(link["capacity"]) * 10e6  # the values are provided in Mbps, so we convert to Gbps
-            cost = REFERENCE_BANDWIDTH / capacity_in_gigabits  # make cost inversely proportional to capacity
+            cost = capacity_in_gigabits / REFERENCE_BANDWIDTH  # make the cost proportional to capacity
 
             forward_edge = (node1, node2)
             graph.add_edge(

@@ -18,7 +18,7 @@ tracks: dict[str, Track] = {}
 # This will be our in-memory cache. TODO: Use a real database
 topologies: dict[str, SingleTrackSolution] = {}
 
-topo = os.path.join("datasource", os.getenv("TOPOFILE", "small_topo.yaml"))
+topo = os.path.join("datasource", os.getenv("TOPOFILE", "azure_geant_topo.yaml"))
 network = load_network(topo)
 
 app = FastAPI()
@@ -95,7 +95,7 @@ async def get_topology_for_track(track_namespace: str) -> SingleTrackSolutionDTO
 
 @app.get("/tracks/{track_namespace}/topology/plot", status_code=status.HTTP_200_OK)
 async def get_topology_plot(track_namespace: str, plotter_type: Annotated[PlotterType | None, Query()] = PlotterType.BASEMAP) -> bytes:
-    used_links = await get_topology_for_track(track_namespace)
+    used_links = (await get_topology_for_track(track_namespace)).used_links
     plotter = get_plotter(plotter_type)
     image_bytes = plotter(network, set(network.nodes), set(network.edges), set(used_links), "red")
     return Response(content=image_bytes, media_type="image/png")

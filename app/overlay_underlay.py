@@ -1,10 +1,9 @@
 import math
-from pathlib import Path
 from typing import Callable
 import geopy.distance
 import networkx as nx
 from plot import basemap_plot_network, save_plot
-from model import default_calculate_latency, default_calculate_cost, display_triangle_inequality_satisfaction, load_graphml
+from model import default_calculate_latency, display_triangle_inequality_satisfaction
 
 
 def find_closest_node(network: nx.DiGraph, cdn_node_data: dict) -> str:
@@ -19,13 +18,9 @@ def find_closest_node(network: nx.DiGraph, cdn_node_data: dict) -> str:
     return closest_node
 
 
-def load_base_network(base_network: nx.DiGraph,
-                      network_name: str,
-                      calculate_latency: Callable[[nx.DiGraph, str, str], float] = default_calculate_latency,
-                      calculate_cost: Callable[[nx.DiGraph, str, str], float] = default_calculate_cost) -> nx.DiGraph:
+def load_base_network(base_network: nx.DiGraph, network_name: str) -> nx.DiGraph:
     common_node_name_prefix = network_name.lower() + "_"
     nx.relabel_nodes(base_network, {node: common_node_name_prefix + str(node) for node in base_network.nodes}, False)
-
     return base_network
 
 
