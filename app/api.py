@@ -184,7 +184,7 @@ async def set_origin(relay_id: int, namespace: str, origin: Annotated[Origin, Bo
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such relay")
     relay = list(nodes)[relay_id - 1]
     
-    delay_budget = float(namespace.split("_")[1]) if "_" in namespace else 0.0
+    delay_budget = float(namespace.split("_")[2]) if "_" in namespace else 0.0
 
     response = await create_track(
         track_namespace=namespace,
