@@ -57,10 +57,10 @@ class ContentType(str, Enum):
 
 def generate_content(track_id, publisher, subscribers, content_type):
     LATENCIES = {
-        ContentType.VIDEO: 500,
-        ContentType.AUDIO: 200,
-        ContentType.GAMING: 50,
-        ContentType.MESSAGING: 1000
+        ContentType.VIDEO: 400,
+        ContentType.AUDIO: 150,
+        ContentType.MESSAGING: 1000,
+        # ContentType.GAMING: 50,
     }
 
     tracks = generate_broadcast_traffic(track_id, publisher, subscribers, LATENCIES[content_type])
