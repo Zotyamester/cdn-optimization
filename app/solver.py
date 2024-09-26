@@ -345,9 +345,9 @@ def get_optimal_topology_for_multiple_tracks(network: nx.DiGraph, tracks: dict[s
 
     # Constraint: sum(zftij * dij) <= Dft
     for track_id, track in tracks.items():
-        for stream, (delay_budget, _) in track.streams.items():
+        for stream in track.streams.keys():
             prob += lp.lpSum([selected_links[track_id][stream][(node1, node2)] * data["latency"]
-                              for node1, node2, data in network.edges(data=True)]) <= delay_budget, \
+                              for node1, node2, data in network.edges(data=True)]) <= track.delay_budget, \
                 f"delay_budget_for_{track_id}_{stream}"
 
     prob.solve(lp.PULP_CBC_CMD(msg=False))
