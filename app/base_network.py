@@ -58,10 +58,11 @@ if __name__ == "__main__":
     single_track_optimizer = get_single_track_optimizer(SingleTrackOptimizerType.MULTICAST_HEURISTIC)
     multi_track_optimizer = get_multi_track_optimizer(MultiTrackOptimizerType.ADAPTED, single_track_optimizer=single_track_optimizer)
 
-    success, objective, used_links_per_track = multi_track_optimizer(network, tracks)
+    success, objective, avg_delay, used_links_per_track = multi_track_optimizer(network, tracks)
 
     print(f"Optimization {"succeeded" if success else "failed"}:")
     print(f"\tTotal cost of network: {objective:.2f} USD")
+    print(f"\tAverage delay in network: {avg_delay:.2f} ms")
 
     united_network = nx.compose(underlay_network, overlay_network)
     used_nodes = set(overlay_network.nodes)

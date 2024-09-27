@@ -46,6 +46,7 @@ class TrackDTO(BaseModel):
 
 class SingleTrackSolutionDTO(BaseModel):
     cost: float
+    avg_delay: float
     used_links: list[tuple[str, str]]
     
 class Origin(BaseModel):
@@ -90,7 +91,7 @@ async def get_topology_for_track(track_namespace: str) -> SingleTrackSolutionDTO
     if solution is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Track namespace not found")
-    return SingleTrackSolutionDTO(cost=solution.objective, used_links=solution.used_links)
+    return SingleTrackSolutionDTO(cost=solution.objective, avg_delay=solution.avg_delay, used_links=solution.used_links)
 
 
 @app.get("/tracks/{track_namespace}/topology/plot", status_code=status.HTTP_200_OK)
@@ -169,7 +170,7 @@ async def get_origin(relay_id: int, namespace: str):
     except ValueError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such relay")
     
-    if response != None:
+    if response is not None:
         response_json = {"url": f"https://10.3.0.{relay_out_id}:4443/"}
         return JSONResponse(content=response_json, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
     else:
@@ -192,7 +193,7 @@ async def set_origin(relay_id: int, namespace: str, origin: Annotated[Origin, Bo
             publisher=relay,
             delay_budget=delay_budget
         ))
-    if response != None:
+    if response is not None:
         response_json = {"url": f"https://10.3.0.{relay_id}/"}
         return JSONResponse(content=response_json)
     else:

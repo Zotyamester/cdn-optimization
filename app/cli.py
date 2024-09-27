@@ -65,12 +65,13 @@ def get_optimal_topology(network: nx.DiGraph, tracks: dict[str, Track], use_cach
         multi_track_optimizer = get_multi_track_optimizer(
             multi_track_optimizer_type, single_track_optimizer=single_track_optimizer)
 
-        success, objective, used_links_per_track = multi_track_optimizer(
+        success, objective, avg_delay, used_links_per_track = multi_track_optimizer(
             network, tracks)
 
         if debug:
             print(f"Optimization {"succeeded" if success else "failed"}:")
             print(f"\tTotal cost of network: {objective:.2f} USD")
+            print(f"\tAverage delay in network: {avg_delay:.2f} ms")
             for track, links in used_links_per_track.items():
                 print(f"\t{track}: {", ".join(
                     f"{node1} <-> {node2}" for (node1, node2) in links)}")
@@ -88,7 +89,7 @@ def generate_sample_traffic(type: str, peers: list[str]) -> dict[str, Track]:
     if type == "live":
         track_id = "live"
         publisher, *subscribers = peers
-        return generate_broadcast_traffic(track_id, publisher, subscribers, 500)
+        return generate_broadcast_traffic(track_id, publisher, subscribers, 50)
     elif type == "video-conference":
         return generate_full_mesh_traffic(peers, 200)
     else:
