@@ -45,6 +45,8 @@ def direct_link_tree(network: nx.Graph, track: Track) -> SingleTrackSolution:
         cost += data["cost"]
         edges.append(edge)
 
+    # Since the path from the publisher to each subscriber is a link,
+    # the average end-to-end delay will be the same as the average link delay
     avg_delay = sum_delay / len(track.subscribers)
 
     return SingleTrackSolution.found(cost, avg_delay, edges)
@@ -169,7 +171,9 @@ def multicast_heuristic(network: nx.DiGraph, track: Track) -> SingleTrackSolutio
         if add_subscriber(node) is None:
             return SingleTrackSolution.not_found()
 
-    avg_delay = sum(latencies.values()) / len(latencies.values())
+    # O(n)
+    avg_delay = sum(latencies.values()) / (len(latencies.values()) - 1)  # Excluding the publisher
+    
     return SingleTrackSolution.found(cost, avg_delay, list(tree.edges))
 
 
@@ -234,7 +238,7 @@ def get_optimal_topology_for_a_single_track(network: nx.DiGraph, track: Track) -
     objective = prob.objective.value()
     used_links = [link for link, var in link_usages.items()
                   if var.varValue > 0]
-    avg_delay = sum(network.get_edge_data(*link)["latency"] for link in used_links) / len(used_links)
+    avg_delay = sum(track.delay_budget + prob.constraints[f"delay_budget_for_{stream}"].value() for stream in track.streams.keys()) / len(track.streams.keys())
     return SingleTrackSolution.found(objective, avg_delay, used_links)
 
 
@@ -248,19 +252,17 @@ def minimum_spanning_tree(network: nx.DiGraph, track: Track) -> SingleTrackSolut
     mst_from_publisher = nx.bfs_tree(mst, track.publisher)
 
     cost = 0.0
-    sum_delay = 0.0
     latencies = {track.publisher: 0.0}
     for u, v in mst_from_publisher.edges:
         data = network.get_edge_data(u, v)
 
         cost += data["cost"]
         latencies[v] = latencies[u] + data["latency"]
-        sum_delay += data["latency"]
 
         if latencies[v] > track.delay_budget:
             return SingleTrackSolution.not_found()
 
-    avg_delay = sum_delay / len(mst_from_publisher.edges)
+    avg_delay = sum(latencies.values()) / (len(latencies.values()) - 1)  # Excluding the publisher
 
     return SingleTrackSolution.found(cost, avg_delay, list(mst_from_publisher.edges))
 
@@ -305,12 +307,8 @@ class MultiTrackSolution:
         if not self.explicit_success:
             return 0.0
         
-        sum_delay = 0.0
-        edge_count = 0
-        for solution in self.solutions.values():
-            sum_delay += solution.avg_delay * len(solution.used_links)
-            edge_count += len(solution.used_links)
-        avg_delay = sum_delay / edge_count
+        # Note: This is not the average delay of the network, but the average delay of the tracks
+        avg_delay = sum(solution.avg_delay for solution in self.solutions.values()) / len(self.solutions.values())
 
         return avg_delay
 
@@ -398,17 +396,15 @@ def get_optimal_topology_for_multiple_tracks(network: nx.DiGraph, tracks: dict[s
         return MultiTrackSolution.not_found()
 
     solutions = {}
-    for track_id in tracks.keys():
+    for track_id, track in tracks.items():
         used_links = [link for link, var in link_usages[track_id].items() if var.varValue > 0]
         
         objective = 0.0
-        sum_delay = 0.0
 
         for link in used_links:
             objective += network.get_edge_data(*link)["cost"]
-            sum_delay += network.get_edge_data(*link)["latency"]
 
-        avg_delay = sum_delay / len(used_links)
+        avg_delay = sum(track.delay_budget + prob.constraints[f"delay_budget_for_{track_id}_{stream}"].value() for stream in track.streams.keys()) / len(track.streams.keys())
 
         solutions[track_id] = SingleTrackSolution.found(objective, avg_delay, used_links)
     return MultiTrackSolution.found(solutions)
