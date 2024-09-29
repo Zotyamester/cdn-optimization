@@ -121,13 +121,13 @@ def create_graph(nodes: list[tuple[str, dict]],
 def display_network_links(network: nx.DiGraph):
     print("Links:")
     for node1, node2, data in sorted(network.edges(data=True), key=lambda kv: kv[2]["latency"]):
-        print(
-            f" * {node1} <-> {node2}:\t\t{data['latency']:.2f} ms\t\t{data['cost']:.2f}")
+        print(f" * {node1} <-> {node2}:\t\t{data['latency']:.2f} ms\t\t{data['cost']:.2f}")
     print()
 
 
 def display_triangle_inequality_satisfaction(network: nx.DiGraph):
-    triangle_inequality_satisfied = 0
+    cost_triangle_inequality_satisfied = 0
+    latency_triangle_inequality_satisfied = 0
 
     for start_node in network.nodes:
         for end_node in network.nodes:
@@ -138,23 +138,32 @@ def display_triangle_inequality_satisfaction(network: nx.DiGraph):
                 if intermediate_node == start_node or intermediate_node == end_node:
                     continue
 
-                cost1 = default_calculate_cost(
-                    network, start_node, intermediate_node)
-                cost2 = default_calculate_cost(
-                    network, intermediate_node, end_node)
-                cost_direct = default_calculate_cost(
-                    network, start_node, end_node)
+                print(f"E: {start_node} -> {intermediate_node} -> {end_node}")
 
-                print(f"{start_node} -> {intermediate_node} -> {end_node}")
+                cost1 = network.get_edge_data(start_node, intermediate_node)["cost"]
+                cost2 = network.get_edge_data(intermediate_node, end_node)["cost"]
+                cost_direct = network.get_edge_data(start_node, end_node)["cost"]
+
                 if cost1 + cost2 >= cost_direct:
-                    print("\tOK")
-                    triangle_inequality_satisfied += 1
+                    print("\t[C]: OK")
+                    cost_triangle_inequality_satisfied += 1
                 else:
-                    print("\nFAIL")
+                    print("\t[C]: FAIL")
+
+                latency1 = network.get_edge_data(start_node, intermediate_node)["latency"]
+                latency2 = network.get_edge_data(intermediate_node, end_node)["latency"]
+                latency_direct = network.get_edge_data(start_node, end_node)["latency"]
+
+                if latency1 + latency2 >= latency_direct:
+                    print("\t[L]: OK")
+                    latency_triangle_inequality_satisfied += 1
+                else:
+                    print("\t[L]: FAIL")
 
     n = len(network.nodes)
     total = n * (n - 1) * (n - 2)  # n choose 3 * 3! => variation
-    print(f"{triangle_inequality_satisfied} / {total} satisfied.")
+    print(f"[C]: {cost_triangle_inequality_satisfied} / {total} satisfied.")
+    print(f"[L]: {latency_triangle_inequality_satisfied} / {total} satisfied.")
 
 
 class Track:
