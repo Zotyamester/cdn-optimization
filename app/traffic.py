@@ -32,13 +32,13 @@ def generate_continental_relays(number_of_continents: int, relay_per_continent: 
         random.seed(seed)
     
     CONTINENTS = {
-        "North_Europe": {"lat_range": (50, 70), "lon_range": (-10, 30)},
-        "South_Europe": {"lat_range": (35, 50), "lon_range": (-10, 40)},
-        "North_America": {"lat_range": (25, 50), "lon_range": (-130, -60)},
-        "South_America": {"lat_range": (-55, 10), "lon_range": (-80, -35)},
-        "Asia": {"lat_range": (10, 60), "lon_range": (60, 150)},
-        "Africa": {"lat_range": (-35, 35), "lon_range": (-20, 55)},
-        "Australia": {"lat_range": (-50, -10), "lon_range": (110, 160)},
+        "North_Europe": {"lat_range": (54, 71), "lon_range": (-25, 45)},
+        "South_Europe": {"lat_range": (36, 54), "lon_range": (-10, 40)},
+        "North_America": {"lat_range": (15, 72), "lon_range": (-168, -52)},
+        "South_America": {"lat_range": (-56, 13), "lon_range": (-81, -34)},
+        "Asia": {"lat_range": (5, 77), "lon_range": (26, 180)},
+        "Africa": {"lat_range": (-35, 38), "lon_range": (-18, 52)},
+        "Australia": {"lat_range": (-47, -10), "lon_range": (112, 180)},
     }
 
     def generate_location(continent, ranges):
