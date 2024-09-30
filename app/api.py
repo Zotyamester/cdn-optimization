@@ -79,7 +79,7 @@ async def create_track(track_namespace: str, track_dto: Annotated[TrackDTO, Body
 @app.get("/tracks/{track_namespace}", status_code=status.HTTP_200_OK)
 async def get_track(track_namespace: str) -> TrackDTO:
     track = tracks.get(track_namespace, None)
-    if track == None:
+    if track is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Track namespace not found")
     return TrackDTO(publisher=track.publisher, delay_budget=track.delay_budget)
@@ -96,9 +96,14 @@ async def get_topology_for_track(track_namespace: str) -> SingleTrackSolutionDTO
 
 @app.get("/tracks/{track_namespace}/topology/plot", status_code=status.HTTP_200_OK)
 async def get_topology_plot(track_namespace: str, plotter_type: Annotated[PlotterType | None, Query()] = PlotterType.BASEMAP) -> bytes:
+    track = tracks.get(track_namespace, None)
+    if track is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Track namespace not found")
+
     used_links = (await get_topology_for_track(track_namespace)).used_links
     plotter = get_plotter(plotter_type)
-    image_bytes = plotter(network, set(network.nodes), set(network.edges), set(used_links), "red")
+    image_bytes = plotter(network, {track.publisher, *track.subscribers}, set(network.edges), set(used_links), "red")
     return Response(content=image_bytes, media_type="image/png")
 
 

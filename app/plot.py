@@ -96,9 +96,9 @@ def basemap_plot_network(network: nx.DiGraph,
         x2, y2 = m(lon2, lat2)
 
         if link in used_links:
-            plt.plot([x1, x2], [y1, y2], color=color, linewidth=1.0)
+            plt.plot([x1, x2], [y1, y2], color=color, linewidth=1.4)
         else:
-            plt.plot([x1, x2], [y1, y2], color="gray", linewidth=0.08)
+            plt.plot([x1, x2], [y1, y2], color="gray", linewidth=0.03)
 
     # Plot nodes
     for node, (lon, lat) in node_positions.items():
