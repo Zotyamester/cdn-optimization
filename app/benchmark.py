@@ -1,4 +1,5 @@
-import networkx as nx
+import os
+import sys
 from enum import Enum
 import time
 from typing import IO
@@ -8,7 +9,7 @@ from traffic import choose_peers, generate_broadcast_traffic
 import signal
 
 
-MAXIMUM_RUNTIME_IN_SECONDS = 60
+MAXIMUM_RUNTIME_IN_SECONDS = 6 * 3600
 
 OPTIMIZER_ABBREVIATIONS = {
     SingleTrackOptimizerType.DIRECT_LINK_TREE: "DIR",
@@ -38,65 +39,58 @@ def generate_content(track_id, publisher, subscribers, content_type):
     return tracks
 
 
-def benchmark():
-    network = load_network("./datasource/azure_geant_topo.yaml")
-    peers = choose_peers(network, network.number_of_nodes())
-    timeout_in_seconds = MAXIMUM_RUNTIME_IN_SECONDS // len(peers)
-
-    with open(f"benchmark-{time.strftime('%Y%m%d%H%M%S')}.csv", "wb", buffering=0) as file:
+def benchmark(network, peers, min_peers, max_peers, step):
+    timeout_in_seconds = MAXIMUM_RUNTIME_IN_SECONDS // (1 + len(ContentType) * ((max_peers - min_peers + 1) // step) * len(SingleTrackOptimizerType))
+    
+    pid = os.getpid()
+    with open(f"benchmark-{pid}-{time.strftime('%Y%m%d%H%M%S')}.csv", "wb", buffering=0) as file:
         store_header(file)
 
         for content_type in ContentType:
             track_id = f"{content_type.name}"
 
-            for number_of_peers in range(2, len(peers) + 1):
+            for number_of_peers in range(min_peers, max_peers + 1, step):
                 publisher, *subscribers = peers[:number_of_peers]
                 tracks = generate_content(track_id, publisher, subscribers, content_type)
 
-                reduced_network = network.copy()
-                reduced_network.remove_nodes_from({publisher, *subscribers} - {*network.nodes})
-
                 for single_track_optimizer_type in SingleTrackOptimizerType:
-                    if single_track_optimizer_type != SingleTrackOptimizerType.INTEGER_LINEAR_PROGRAMMING:
-                        continue
                     single_track_optimizer = get_single_track_optimizer(
                         single_track_optimizer_type)
                     multi_track_optimizer = get_multi_track_optimizer(
                         MultiTrackOptimizerType.ADAPTED, single_track_optimizer=single_track_optimizer)
 
                     print(f"Running benchmarks for {content_type.name} with {number_of_peers} peers using {single_track_optimizer_type.name}")
-                    for net, reduced in [(network, False), (reduced_network, True)]:
-                        def handler(_signum, _frame):
-                            raise TimeoutError("Optimization timeout")
 
-                        signal.signal(signal.SIGALRM, handler)
-                        signal.alarm(timeout_in_seconds)
+                    def handler(_signum, _frame):
+                        raise TimeoutError("Optimization timeout")
 
-                        try:
-                            runtime_in_ms, solution = collect_optimization_info(net, tracks, multi_track_optimizer)
-                            store_record(content_type, number_of_peers, single_track_optimizer_type, reduced, runtime_in_ms, solution, file)
-                            print(f"\tOptimization completed (for {'reduced' if reduced else 'full'} network)")
-                        except TimeoutError:
-                            store_dnf_record(content_type, number_of_peers, single_track_optimizer_type, reduced, file)
-                            print(f"\tOptimization timed out (for {'reduced' if reduced else 'full'} network)")
-                        except Exception as e:
-                            print(f"\tAnother error has occured (for {'reduced' if reduced else 'full'} network): {e}")
+                    signal.signal(signal.SIGALRM, handler)
+                    signal.alarm(timeout_in_seconds)
 
-                        signal.alarm(0)
+                    try:
+                        runtime_in_ms, solution = collect_optimization_info(network, tracks, multi_track_optimizer)
+                        store_record(content_type, number_of_peers, single_track_optimizer_type, runtime_in_ms, solution, file)
+                        print(f"\tOptimization completed")
+                    except TimeoutError:
+                        store_dnf_record(content_type, number_of_peers, single_track_optimizer_type, file)
+                        print(f"\tOptimization timed out")
+                    except Exception as e:
+                        print(f"\tAnother error has occured: {e}")
+
+                    signal.alarm(0)
 
 
 def store_header(file: IO):
-    header = "content_type,number_of_peers,opt_type,reduced,runtime_in_ms,success,objective,avg_delay\n"
+    header = "content_type,number_of_peers,opt_type,runtime_in_ms,success,objective,avg_delay\n"
     file.write(header.encode("utf-8"))
 
 
 def store_dnf_record(content_type: ContentType,
                      number_of_peers: int,
                      opt_type: SingleTrackOptimizerType | MultiTrackOptimizerType,
-                     reduced: bool,
                      file: IO):
     opt_name = OPTIMIZER_ABBREVIATIONS[opt_type]
-    record = (content_type.name, str(number_of_peers), opt_name, "1" if reduced else "0", "DNF", "0", "-", "-")
+    record = (content_type.name, str(number_of_peers), opt_name, "DNF", "0", "-", "-")
     record_line = ",".join(record) + "\n"
     file.write(record_line.encode("utf-8"))
 
@@ -104,12 +98,11 @@ def store_dnf_record(content_type: ContentType,
 def store_record(content_type: ContentType,
                  number_of_peers: int,
                  opt_type: SingleTrackOptimizerType | MultiTrackOptimizerType,
-                 reduced: bool,
                  runtime_in_ms: float,
                  solution: MultiTrackSolution,
                  file: IO):
     opt_name = OPTIMIZER_ABBREVIATIONS[opt_type]
-    record = (content_type.name, str(number_of_peers), opt_name, "1" if reduced else "0", f"{runtime_in_ms:.4f}", "1" if solution.success else "0", f"{solution.objective:.4f}", f"{solution.avg_delay:.4f}")
+    record = (content_type.name, str(number_of_peers), opt_name, f"{runtime_in_ms:.4f}", "1" if solution.success else "0", f"{solution.objective:.4f}", f"{solution.avg_delay:.4f}")
     record_line = ",".join(record) + "\n"
     file.write(record_line.encode("utf-8"))
 
@@ -125,4 +118,21 @@ def collect_optimization_info(network, tracks, multi_track_optimizer):
 
 
 if __name__ == "__main__":
-    benchmark()
+    network = load_network("./datasource/azure_geant_topo.yaml")
+    peers = choose_peers(network, network.number_of_nodes())
+
+    n = os.cpu_count()
+
+    pids = []
+    
+    for i in range(n):
+        if (pid := os.fork()) == 0:
+            benchmark(network, peers, 2 + i, min(2 + n + i, len(peers)), n)
+            sys.exit(0)
+        elif pid > 0:
+            pids.append(pid)
+        else:
+            print(f"Error forking at {i}")
+    
+    for pid in pids:
+        os.waitpid(pid, 0)
