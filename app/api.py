@@ -46,6 +46,7 @@ class TrackDTO(BaseModel):
 
 class SingleTrackSolutionDTO(BaseModel):
     cost: float
+    avg_delay: float
     used_links: list[tuple[str, str]]
     
 class Origin(BaseModel):
@@ -78,7 +79,7 @@ async def create_track(track_namespace: str, track_dto: Annotated[TrackDTO, Body
 @app.get("/tracks/{track_namespace}", status_code=status.HTTP_200_OK)
 async def get_track(track_namespace: str) -> TrackDTO:
     track = tracks.get(track_namespace, None)
-    if track == None:
+    if track is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Track namespace not found")
     return TrackDTO(publisher=track.publisher, delay_budget=track.delay_budget)
@@ -90,14 +91,19 @@ async def get_topology_for_track(track_namespace: str) -> SingleTrackSolutionDTO
     if solution is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Track namespace not found")
-    return SingleTrackSolutionDTO(cost=solution.objective, used_links=solution.used_links)
+    return SingleTrackSolutionDTO(cost=solution.objective, avg_delay=solution.avg_delay, used_links=solution.used_links)
 
 
 @app.get("/tracks/{track_namespace}/topology/plot", status_code=status.HTTP_200_OK)
 async def get_topology_plot(track_namespace: str, plotter_type: Annotated[PlotterType | None, Query()] = PlotterType.BASEMAP) -> bytes:
+    track = tracks.get(track_namespace, None)
+    if track is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Track namespace not found")
+
     used_links = (await get_topology_for_track(track_namespace)).used_links
     plotter = get_plotter(plotter_type)
-    image_bytes = plotter(network, set(network.nodes), set(network.edges), set(used_links), "red")
+    image_bytes = plotter(network, {track.publisher, *track.subscribers}, set(network.edges), set(used_links), "red")
     return Response(content=image_bytes, media_type="image/png")
 
 
@@ -169,7 +175,7 @@ async def get_origin(relay_id: int, namespace: str):
     except ValueError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No such relay")
     
-    if response != None:
+    if response is not None:
         response_json = {"url": f"https://10.3.0.{relay_out_id}:4443/"}
         return JSONResponse(content=response_json, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
     else:
@@ -192,7 +198,7 @@ async def set_origin(relay_id: int, namespace: str, origin: Annotated[Origin, Bo
             publisher=relay,
             delay_budget=delay_budget
         ))
-    if response != None:
+    if response is not None:
         response_json = {"url": f"https://10.3.0.{relay_id}/"}
         return JSONResponse(content=response_json)
     else:
