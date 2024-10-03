@@ -4,14 +4,14 @@ api: "origi"
 mode: "gst"
 first_hop_relay:
   - relayid: "lenoir"
-    track: "1_bbb-720-30_1000"
-  - relayid: "ohio"
-    track: "2_bbb-720-30_900"
+    track: "_bbb-720-30_1000"
 last_hop_relay:
   - relayid: "middenmeer"
-    track: "1_bbb-720-30_1000"
+    track: "_bbb-720-30_1000"
   - relayid: "belgium"
-    track: "2_bbb-720-30_900"
+    track: "_bbb-720-30_1000"
+  - relayid: "dublin"
+    track: "_bbb-720-30_1000"
 
 nodes:
   - name: "virginia"

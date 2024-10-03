@@ -4,10 +4,10 @@ api: "origi"
 mode: "gst"
 first_hop_relay:
   - relayid: "node1"
-    track: "bbb-720-10_1000"
+    track: "bbb-720-30_1000"
 last_hop_relay:
   - relayid: "node1"
-    track: "bbb-720-10_1000"
+    track: "bbb-720-30_1000"
 
 nodes:
   - name: "node1"
