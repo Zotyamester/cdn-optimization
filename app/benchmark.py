@@ -9,7 +9,8 @@ from traffic import choose_peers, generate_broadcast_traffic
 import signal
 
 
-MAXIMUM_RUNTIME_IN_SECONDS = 6 * 3600
+MAXIMUM_RUNTIME_IN_SECONDS = 8 * 3600
+
 
 OPTIMIZER_ABBREVIATIONS = {
     SingleTrackOptimizerType.DIRECT_LINK_TREE: "DIR",
@@ -40,7 +41,7 @@ def generate_content(track_id, publisher, subscribers, content_type):
 
 
 def benchmark(network, peers, min_peers, max_peers, step):
-    timeout_in_seconds = MAXIMUM_RUNTIME_IN_SECONDS // (1 + len(ContentType) * ((max_peers - min_peers + 1) // step) * len(SingleTrackOptimizerType))
+    timeout_in_seconds = MAXIMUM_RUNTIME_IN_SECONDS // max(1, len(ContentType) * (max_peers - min_peers + 1) // step)
     
     pid = os.getpid()
     with open(f"benchmark-{pid}-{time.strftime('%Y%m%d%H%M%S')}.csv", "wb", buffering=0) as file:
@@ -48,12 +49,20 @@ def benchmark(network, peers, min_peers, max_peers, step):
 
         for content_type in ContentType:
             track_id = f"{content_type.name}"
+            
+            # If for some value of number_of_peers, the optimization
+            # times out, we skip it for the rest of the run (since it
+            # is likely to timeout again when optimizing for more peers)
+            to_be_skipped = set()
 
             for number_of_peers in range(min_peers, max_peers + 1, step):
                 publisher, *subscribers = peers[:number_of_peers]
                 tracks = generate_content(track_id, publisher, subscribers, content_type)
 
                 for single_track_optimizer_type in SingleTrackOptimizerType:
+                    if single_track_optimizer_type in to_be_skipped:
+                        continue
+
                     single_track_optimizer = get_single_track_optimizer(
                         single_track_optimizer_type)
                     multi_track_optimizer = get_multi_track_optimizer(
@@ -72,6 +81,7 @@ def benchmark(network, peers, min_peers, max_peers, step):
                         store_record(content_type, number_of_peers, single_track_optimizer_type, runtime_in_ms, solution, file)
                         print(f"\tOptimization completed")
                     except TimeoutError:
+                        to_be_skipped.add(single_track_optimizer_type)
                         store_dnf_record(content_type, number_of_peers, single_track_optimizer_type, file)
                         print(f"\tOptimization timed out")
                     except Exception as e:
