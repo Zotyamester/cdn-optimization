@@ -9,7 +9,7 @@ from traffic import choose_peers, generate_broadcast_traffic
 import signal
 
 
-MAXIMUM_RUNTIME_IN_SECONDS = 8 * 3600
+MAXIMUM_RUNTIME_IN_SECONDS = 3600
 
 
 OPTIMIZER_ABBREVIATIONS = {
@@ -41,8 +41,6 @@ def generate_content(track_id, publisher, subscribers, content_type):
 
 
 def benchmark(network, peers, min_peers, max_peers, step):
-    timeout_in_seconds = MAXIMUM_RUNTIME_IN_SECONDS // max(1, len(ContentType) * (max_peers - min_peers + 1) // step)
-    
     pid = os.getpid()
     with open(f"benchmark-{pid}-{time.strftime('%Y%m%d%H%M%S')}.csv", "wb", buffering=0) as file:
         store_header(file)
@@ -74,7 +72,7 @@ def benchmark(network, peers, min_peers, max_peers, step):
                         raise TimeoutError("Optimization timeout")
 
                     signal.signal(signal.SIGALRM, handler)
-                    signal.alarm(timeout_in_seconds)
+                    signal.alarm(MAXIMUM_RUNTIME_IN_SECONDS)
 
                     try:
                         runtime_in_ms, solution = collect_optimization_info(network, tracks, multi_track_optimizer)
