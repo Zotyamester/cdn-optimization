@@ -135,7 +135,7 @@ if __name__ == "__main__":
     
     for i in range(n):
         if (pid := os.fork()) == 0:
-            benchmark(network, peers, 2 + i, min(2 + n + i, len(peers)), n)
+            benchmark(network, peers, 2 + i, len(peers), n)
             sys.exit(0)
         elif pid > 0:
             pids.append(pid)
