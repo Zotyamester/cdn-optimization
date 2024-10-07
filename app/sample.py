@@ -4,20 +4,20 @@ import networkx as nx
 import yaml
 
 
-def calculate_cost_factory(link_costs: dict[tuple[str, str], float]):
-    def calculate_cost(_, node1, node2):
+def lut_based_calculator_factory(lut: dict[tuple[str, str], float]):
+    def calculate(_, node1, node2):
         link = (node1, node2)
-        if link in link_costs:
-            return link_costs[link]
+        if link in lut:
+            return lut[link]
         reverse_link = (node2, node1)
-        if reverse_link in link_costs:
-            return link_costs[reverse_link]
+        if reverse_link in lut:
+            return lut[reverse_link]
         raise ValueError(f"Link cost not found for {link} or {reverse_link}")
 
-    return calculate_cost
+    return calculate
 
 
-def load_network(file_path: str) -> nx.DiGraph:
+def load_network(file_path: str, recalculate_latency: bool = False) -> nx.DiGraph:
     with open(file_path, "r") as file:
         topo_data = yaml.safe_load(file)
 
@@ -27,14 +27,22 @@ def load_network(file_path: str) -> nx.DiGraph:
     ]
 
     link_costs = {}
+    link_delays = {}
 
     for edge in topo_data["edges"]:
         node1 = edge["node1"]
         node2 = edge["node2"]
         cost = edge["attributes"]["cost"]
         link_costs[(node1, node2)] = cost
+        latency = edge["attributes"]["latency"]
+        link_delays[(node1, node2)] = latency
 
-    return create_graph(nodes, calculate_cost=calculate_cost_factory(link_costs))
+    if recalculate_latency:
+        return create_graph(nodes, calculate_cost=lut_based_calculator_factory(link_costs))
+    else:
+        return create_graph(nodes,
+                            calculate_latency=lut_based_calculator_factory(link_delays),
+                            calculate_cost=lut_based_calculator_factory(link_costs))
 
 
 def store_network(network: nx.DiGraph, file_path: str):

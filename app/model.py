@@ -138,27 +138,25 @@ def display_triangle_inequality_satisfaction(network: nx.DiGraph):
                 if intermediate_node == start_node or intermediate_node == end_node:
                     continue
 
-                print(f"E: {start_node} -> {intermediate_node} -> {end_node}")
-
                 cost1 = network.get_edge_data(start_node, intermediate_node)["cost"]
                 cost2 = network.get_edge_data(intermediate_node, end_node)["cost"]
                 cost_direct = network.get_edge_data(start_node, end_node)["cost"]
 
                 if cost1 + cost2 >= cost_direct:
-                    print("\t[C]: OK")
                     cost_triangle_inequality_satisfied += 1
                 else:
-                    print("\t[C]: FAIL")
+                    print(f"{start_node} -> {intermediate_node} -> {end_node}")
+                    print(f"\t[C]: FAIL {cost1} + {cost2} < {cost_direct}")
 
                 latency1 = network.get_edge_data(start_node, intermediate_node)["latency"]
                 latency2 = network.get_edge_data(intermediate_node, end_node)["latency"]
                 latency_direct = network.get_edge_data(start_node, end_node)["latency"]
 
                 if latency1 + latency2 >= latency_direct:
-                    print("\t[L]: OK")
                     latency_triangle_inequality_satisfied += 1
                 else:
-                    print("\t[L]: FAIL")
+                    print(f"{start_node} -> {intermediate_node} -> {end_node}")
+                    print(f"\t[L]: FAIL {latency1} + {latency2} < {latency_direct}")
 
     n = len(network.nodes)
     total = n * (n - 1) * (n - 2)  # n choose 3 * 3! => variation
