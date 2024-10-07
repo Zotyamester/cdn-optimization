@@ -6,7 +6,7 @@ edges:
   node2: europe-west2
 - attributes:
     cost: 0.02
-    latency: 1.7282414675059894
+    latency: 1.72824146750599
   node1: europe-west1
   node2: europe-west3
 - attributes:
@@ -16,12 +16,12 @@ edges:
   node2: europe-north1
 - attributes:
     cost: 0.02
-    latency: 3.422330158132959
+    latency: 3.4223301581329517
   node1: europe-west1
   node2: europe-south1
 - attributes:
     cost: 0.05
-    latency: 27.693041014830115
+    latency: 27.69304101483011
   node1: europe-west1
   node2: northamerica-northeast1
 - attributes:
@@ -36,12 +36,12 @@ edges:
   node2: us-west1
 - attributes:
     cost: 0.05
-    latency: 45.29469826364638
+    latency: 45.294698263646396
   node1: europe-west1
   node2: us-west2
 - attributes:
     cost: 0.08
-    latency: 48.418056183904696
+    latency: 48.41805618390471
   node1: europe-west1
   node2: asia-east1
 - attributes:
@@ -66,12 +66,12 @@ edges:
   node2: australia-southeast1
 - attributes:
     cost: 0.11
-    latency: 34.57733875665495
+    latency: 34.577338756654946
   node1: europe-west1
   node2: asia-west1
 - attributes:
     cost: 0.14
-    latency: 47.91707594881686
+    latency: 47.91707594881685
   node1: europe-west1
   node2: southamerica-east1
 - attributes:
@@ -86,7 +86,7 @@ edges:
   node2: europe-west1
 - attributes:
     cost: 0.02
-    latency: 3.1983357983956884
+    latency: 3.1983357983956897
   node1: europe-west2
   node2: europe-west3
 - attributes:
@@ -116,7 +116,7 @@ edges:
   node2: us-west1
 - attributes:
     cost: 0.05
-    latency: 43.88318008743141
+    latency: 43.88318008743142
   node1: europe-west2
   node2: us-west2
 - attributes:
@@ -161,22 +161,22 @@ edges:
   node2: africa-west1
 - attributes:
     cost: 0.02
-    latency: 1.7282414675059894
+    latency: 1.72824146750599
   node1: europe-west3
   node2: europe-west1
 - attributes:
     cost: 0.02
-    latency: 3.1983357983956884
+    latency: 3.1983357983956897
   node1: europe-west3
   node2: europe-west2
 - attributes:
     cost: 0.02
-    latency: 8.21366786116972
+    latency: 8.213667861169728
   node1: europe-west3
   node2: europe-north1
 - attributes:
     cost: 0.02
-    latency: 2.590224229636748
+    latency: 2.5902242296367444
   node1: europe-west3
   node2: europe-south1
 - attributes:
@@ -186,17 +186,17 @@ edges:
   node2: northamerica-northeast1
 - attributes:
     cost: 0.05
-    latency: 36.009406344281224
+    latency: 36.00940634428124
   node1: europe-west3
   node2: us-east1
 - attributes:
     cost: 0.05
-    latency: 41.7613825905357
+    latency: 41.76138259053571
   node1: europe-west3
   node2: us-west1
 - attributes:
     cost: 0.05
-    latency: 46.623893410798246
+    latency: 46.62389341079825
   node1: europe-west3
   node2: us-west2
 - attributes:
@@ -231,12 +231,12 @@ edges:
   node2: asia-west1
 - attributes:
     cost: 0.14
-    latency: 49.03704913550425
+    latency: 49.03704913550424
   node1: europe-west3
   node2: southamerica-east1
 - attributes:
     cost: 0.11
-    latency: 43.33377001628118
+    latency: 43.33377001628117
   node1: europe-west3
   node2: africa-west1
 - attributes:
@@ -251,7 +251,7 @@ edges:
   node2: europe-west2
 - attributes:
     cost: 0.02
-    latency: 8.21366786116972
+    latency: 8.213667861169728
   node1: europe-north1
   node2: europe-west3
 - attributes:
@@ -271,7 +271,7 @@ edges:
   node2: us-east1
 - attributes:
     cost: 0.05
-    latency: 39.4633486278935
+    latency: 39.46334862789349
   node1: europe-north1
   node2: us-west1
 - attributes:
@@ -321,7 +321,7 @@ edges:
   node2: africa-west1
 - attributes:
     cost: 0.02
-    latency: 3.422330158132959
+    latency: 3.4223301581329517
   node1: europe-south1
   node2: europe-west1
 - attributes:
@@ -331,7 +331,7 @@ edges:
   node2: europe-west2
 - attributes:
     cost: 0.02
-    latency: 2.590224229636748
+    latency: 2.5902242296367444
   node1: europe-south1
   node2: europe-west3
 - attributes:
@@ -356,7 +356,7 @@ edges:
   node2: us-west1
 - attributes:
     cost: 0.05
-    latency: 48.68665145661341
+    latency: 48.68665145661342
   node1: europe-south1
   node2: us-west2
 - attributes:
@@ -401,7 +401,7 @@ edges:
   node2: africa-west1
 - attributes:
     cost: 0.05
-    latency: 27.693041014830115
+    latency: 27.69304101483011
   node1: northamerica-northeast1
   node2: europe-west1
 - attributes:
@@ -431,12 +431,12 @@ edges:
   node2: us-east1
 - attributes:
     cost: 0.02
-    latency: 18.30955733351553
+    latency: 18.309557333515535
   node1: northamerica-northeast1
   node2: us-west1
 - attributes:
     cost: 0.02
-    latency: 19.876174208366425
+    latency: 19.87617420836643
   node1: northamerica-northeast1
   node2: us-west2
 - attributes:
@@ -491,7 +491,7 @@ edges:
   node2: europe-west2
 - attributes:
     cost: 0.05
-    latency: 36.009406344281224
+    latency: 36.00940634428124
   node1: us-east1
   node2: europe-west3
 - attributes:
@@ -571,12 +571,12 @@ edges:
   node2: europe-west2
 - attributes:
     cost: 0.05
-    latency: 41.7613825905357
+    latency: 41.76138259053571
   node1: us-west1
   node2: europe-west3
 - attributes:
     cost: 0.05
-    latency: 39.4633486278935
+    latency: 39.46334862789349
   node1: us-west1
   node2: europe-north1
 - attributes:
@@ -586,7 +586,7 @@ edges:
   node2: europe-south1
 - attributes:
     cost: 0.02
-    latency: 18.30955733351553
+    latency: 18.309557333515535
   node1: us-west1
   node2: northamerica-northeast1
 - attributes:
@@ -596,7 +596,7 @@ edges:
   node2: us-east1
 - attributes:
     cost: 0.02
-    latency: 6.528604527597568
+    latency: 6.528604527597575
   node1: us-west1
   node2: us-west2
 - attributes:
@@ -641,17 +641,17 @@ edges:
   node2: africa-west1
 - attributes:
     cost: 0.05
-    latency: 45.29469826364638
+    latency: 45.294698263646396
   node1: us-west2
   node2: europe-west1
 - attributes:
     cost: 0.05
-    latency: 43.88318008743141
+    latency: 43.88318008743142
   node1: us-west2
   node2: europe-west2
 - attributes:
     cost: 0.05
-    latency: 46.623893410798246
+    latency: 46.62389341079825
   node1: us-west2
   node2: europe-west3
 - attributes:
@@ -661,12 +661,12 @@ edges:
   node2: europe-north1
 - attributes:
     cost: 0.05
-    latency: 48.68665145661341
+    latency: 48.68665145661342
   node1: us-west2
   node2: europe-south1
 - attributes:
     cost: 0.02
-    latency: 19.876174208366425
+    latency: 19.87617420836643
   node1: us-west2
   node2: northamerica-northeast1
 - attributes:
@@ -676,7 +676,7 @@ edges:
   node2: us-east1
 - attributes:
     cost: 0.02
-    latency: 6.528604527597568
+    latency: 6.528604527597575
   node1: us-west2
   node2: us-west1
 - attributes:
@@ -686,7 +686,7 @@ edges:
   node2: asia-east1
 - attributes:
     cost: 0.08
-    latency: 44.17272857912365
+    latency: 44.17272857912366
   node1: us-west2
   node2: asia-northeast1
 - attributes:
@@ -701,7 +701,7 @@ edges:
   node2: asia-southeast2
 - attributes:
     cost: 0.1
-    latency: 60.31460144861272
+    latency: 60.31460144861271
   node1: us-west2
   node2: australia-southeast1
 - attributes:
@@ -711,7 +711,7 @@ edges:
   node2: asia-west1
 - attributes:
     cost: 0.14
-    latency: 49.47476390118509
+    latency: 49.47476390118508
   node1: us-west2
   node2: southamerica-east1
 - attributes:
@@ -721,7 +721,7 @@ edges:
   node2: africa-west1
 - attributes:
     cost: 0.08
-    latency: 48.418056183904696
+    latency: 48.41805618390471
   node1: asia-east1
   node2: europe-west1
 - attributes:
@@ -771,7 +771,7 @@ edges:
   node2: asia-northeast1
 - attributes:
     cost: 0.08
-    latency: 15.472181958497355
+    latency: 15.472181958497348
   node1: asia-east1
   node2: asia-southeast1
 - attributes:
@@ -841,7 +841,7 @@ edges:
   node2: us-west1
 - attributes:
     cost: 0.08
-    latency: 44.17272857912365
+    latency: 44.17272857912366
   node1: asia-northeast1
   node2: us-west2
 - attributes:
@@ -926,7 +926,7 @@ edges:
   node2: us-west2
 - attributes:
     cost: 0.08
-    latency: 15.472181958497355
+    latency: 15.472181958497348
   node1: asia-southeast1
   node2: asia-east1
 - attributes:
@@ -1081,7 +1081,7 @@ edges:
   node2: us-west1
 - attributes:
     cost: 0.1
-    latency: 60.31460144861272
+    latency: 60.31460144861271
   node1: australia-southeast1
   node2: us-west2
 - attributes:
@@ -1121,7 +1121,7 @@ edges:
   node2: africa-west1
 - attributes:
     cost: 0.11
-    latency: 34.57733875665495
+    latency: 34.577338756654946
   node1: asia-west1
   node2: europe-west1
 - attributes:
@@ -1201,7 +1201,7 @@ edges:
   node2: africa-west1
 - attributes:
     cost: 0.14
-    latency: 47.91707594881686
+    latency: 47.91707594881685
   node1: southamerica-east1
   node2: europe-west1
 - attributes:
@@ -1211,7 +1211,7 @@ edges:
   node2: europe-west2
 - attributes:
     cost: 0.14
-    latency: 49.03704913550425
+    latency: 49.03704913550424
   node1: southamerica-east1
   node2: europe-west3
 - attributes:
@@ -1241,7 +1241,7 @@ edges:
   node2: us-west1
 - attributes:
     cost: 0.14
-    latency: 49.47476390118509
+    latency: 49.47476390118508
   node1: southamerica-east1
   node2: us-west2
 - attributes:
@@ -1291,7 +1291,7 @@ edges:
   node2: europe-west2
 - attributes:
     cost: 0.11
-    latency: 43.33377001628118
+    latency: 43.33377001628117
   node1: africa-west1
   node2: europe-west3
 - attributes:

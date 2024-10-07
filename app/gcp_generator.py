@@ -1,4 +1,4 @@
-from sample import calculate_cost_factory, store_network
+from sample import lut_based_calculator_factory, store_network
 from model import create_graph, display_triangle_inequality_satisfaction
 
 if __name__ == "__main__":
@@ -314,6 +314,6 @@ if __name__ == "__main__":
         ("africa-west1", "southamerica-east1"): 0.14,
     }
 
-    network = create_graph(nodes, calculate_cost=calculate_cost_factory(link_costs))
+    network = create_graph(nodes, calculate_cost=lut_based_calculator_factory(link_costs))
     display_triangle_inequality_satisfaction(network)
     store_network(network, "datasource/gcp_topo.yaml")

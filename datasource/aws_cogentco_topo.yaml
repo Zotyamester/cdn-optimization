@@ -1,0 +1,398 @@
+edges:
+- attributes:
+    cost: 1.0
+    latency: 2.328955625675759
+  node1: eu-west-1
+  node2: eu-west-2
+- attributes:
+    cost: 3.0
+    latency: 4.573241260907124
+  node1: eu-west-1
+  node2: eu-west-3
+- attributes:
+    cost: 6.0
+    latency: 6.632558474135353
+  node1: eu-west-1
+  node2: eu-central-1
+- attributes:
+    cost: 13.0
+    latency: 11.653816848282702
+  node1: eu-west-1
+  node2: eu-north-1
+- attributes:
+    cost: 10.0
+    latency: 9.365027936245575
+  node1: eu-west-1
+  node2: eu-south-1
+- attributes:
+    cost: 5.0
+    latency: 35.69346144795271
+  node1: eu-west-1
+  node2: us-east-1
+- attributes:
+    cost: 15.0
+    latency: 52.49113858138783
+  node1: eu-west-1
+  node2: us-west-1
+- attributes:
+    cost: 14.0
+    latency: 52.746813120697404
+  node1: eu-west-1
+  node2: us-west-2
+- attributes:
+    cost: 1.0
+    latency: 2.328955625675759
+  node1: eu-west-2
+  node2: eu-west-1
+- attributes:
+    cost: 2.0
+    latency: 2.246189876420631
+  node1: eu-west-2
+  node2: eu-west-3
+- attributes:
+    cost: 5.0
+    latency: 4.305507089648859
+  node1: eu-west-2
+  node2: eu-central-1
+- attributes:
+    cost: 12.0
+    latency: 9.326765463796209
+  node1: eu-west-2
+  node2: eu-north-1
+- attributes:
+    cost: 9.0
+    latency: 7.037976551759082
+  node1: eu-west-2
+  node2: eu-south-1
+- attributes:
+    cost: 4.0
+    latency: 33.36641006346621
+  node1: eu-west-2
+  node2: us-east-1
+- attributes:
+    cost: 14.0
+    latency: 50.16408719690134
+  node1: eu-west-2
+  node2: us-west-1
+- attributes:
+    cost: 13.0
+    latency: 50.419761736210916
+  node1: eu-west-2
+  node2: us-west-2
+- attributes:
+    cost: 3.0
+    latency: 4.573241260907124
+  node1: eu-west-3
+  node2: eu-west-1
+- attributes:
+    cost: 2.0
+    latency: 2.246189876420631
+  node1: eu-west-3
+  node2: eu-west-2
+- attributes:
+    cost: 5.0
+    latency: 4.0233156318897745
+  node1: eu-west-3
+  node2: eu-central-1
+- attributes:
+    cost: 12.0
+    latency: 9.044574006037124
+  node1: eu-west-3
+  node2: eu-north-1
+- attributes:
+    cost: 7.0
+    latency: 5.495571747882914
+  node1: eu-west-3
+  node2: eu-south-1
+- attributes:
+    cost: 2.0
+    latency: 31.12455724368828
+  node1: eu-west-3
+  node2: us-east-1
+- attributes:
+    cost: 16.0
+    latency: 52.408372832132706
+  node1: eu-west-3
+  node2: us-west-1
+- attributes:
+    cost: 15.0
+    latency: 52.66404737144228
+  node1: eu-west-3
+  node2: us-west-2
+- attributes:
+    cost: 6.0
+    latency: 6.632558474135353
+  node1: eu-central-1
+  node2: eu-west-1
+- attributes:
+    cost: 5.0
+    latency: 4.305507089648859
+  node1: eu-central-1
+  node2: eu-west-2
+- attributes:
+    cost: 5.0
+    latency: 4.023315631889775
+  node1: eu-central-1
+  node2: eu-west-3
+- attributes:
+    cost: 9.0
+    latency: 6.852179878637179
+  node1: eu-central-1
+  node2: eu-north-1
+- attributes:
+    cost: 4.0
+    latency: 2.7389475239890606
+  node1: eu-central-1
+  node2: eu-south-1
+- attributes:
+    cost: 4.0
+    latency: 32.9708887172219
+  node1: eu-central-1
+  node2: us-east-1
+- attributes:
+    cost: 14.0
+    latency: 53.64745785367165
+  node1: eu-central-1
+  node2: us-west-1
+- attributes:
+    cost: 13.0
+    latency: 53.90313239298123
+  node1: eu-central-1
+  node2: us-west-2
+- attributes:
+    cost: 13.0
+    latency: 11.653816848282704
+  node1: eu-north-1
+  node2: eu-west-1
+- attributes:
+    cost: 12.0
+    latency: 9.326765463796209
+  node1: eu-north-1
+  node2: eu-west-2
+- attributes:
+    cost: 12.0
+    latency: 9.044574006037125
+  node1: eu-north-1
+  node2: eu-west-3
+- attributes:
+    cost: 9.0
+    latency: 6.852179878637179
+  node1: eu-north-1
+  node2: eu-central-1
+- attributes:
+    cost: 13.0
+    latency: 9.5846493407474
+  node1: eu-north-1
+  node2: eu-south-1
+- attributes:
+    cost: 13.0
+    latency: 39.81659053398024
+  node1: eu-north-1
+  node2: us-east-1
+- attributes:
+    cost: 26.0
+    latency: 58.92331095736381
+  node1: eu-north-1
+  node2: us-west-1
+- attributes:
+    cost: 25.0
+    latency: 59.178985496673384
+  node1: eu-north-1
+  node2: us-west-2
+- attributes:
+    cost: 10.0
+    latency: 9.365027936245577
+  node1: eu-south-1
+  node2: eu-west-1
+- attributes:
+    cost: 9.0
+    latency: 7.037976551759082
+  node1: eu-south-1
+  node2: eu-west-2
+- attributes:
+    cost: 7.0
+    latency: 5.495571747882914
+  node1: eu-south-1
+  node2: eu-west-3
+- attributes:
+    cost: 4.0
+    latency: 2.7389475239890606
+  node1: eu-south-1
+  node2: eu-central-1
+- attributes:
+    cost: 13.0
+    latency: 9.5846493407474
+  node1: eu-south-1
+  node2: eu-north-1
+- attributes:
+    cost: 8.0
+    latency: 35.70335817933212
+  node1: eu-south-1
+  node2: us-east-1
+- attributes:
+    cost: 18.0
+    latency: 56.37992731578187
+  node1: eu-south-1
+  node2: us-west-1
+- attributes:
+    cost: 17.0
+    latency: 56.635601855091444
+  node1: eu-south-1
+  node2: us-west-2
+- attributes:
+    cost: 5.0
+    latency: 35.69346144795271
+  node1: us-east-1
+  node2: eu-west-1
+- attributes:
+    cost: 4.0
+    latency: 33.36641006346621
+  node1: us-east-1
+  node2: eu-west-2
+- attributes:
+    cost: 2.0
+    latency: 31.124557243688283
+  node1: us-east-1
+  node2: eu-west-3
+- attributes:
+    cost: 4.0
+    latency: 32.9708887172219
+  node1: us-east-1
+  node2: eu-central-1
+- attributes:
+    cost: 13.0
+    latency: 39.81659053398024
+  node1: us-east-1
+  node2: eu-north-1
+- attributes:
+    cost: 8.0
+    latency: 35.70335817933213
+  node1: us-east-1
+  node2: eu-south-1
+- attributes:
+    cost: 14.0
+    latency: 22.127569849994284
+  node1: us-east-1
+  node2: us-west-1
+- attributes:
+    cost: 13.0
+    latency: 22.383244389303854
+  node1: us-east-1
+  node2: us-west-2
+- attributes:
+    cost: 15.0
+    latency: 52.49113858138783
+  node1: us-west-1
+  node2: eu-west-1
+- attributes:
+    cost: 14.0
+    latency: 50.164087196901335
+  node1: us-west-1
+  node2: eu-west-2
+- attributes:
+    cost: 16.0
+    latency: 52.4083728321327
+  node1: us-west-1
+  node2: eu-west-3
+- attributes:
+    cost: 14.0
+    latency: 53.647457853671646
+  node1: us-west-1
+  node2: eu-central-1
+- attributes:
+    cost: 26.0
+    latency: 58.92331095736382
+  node1: us-west-1
+  node2: eu-north-1
+- attributes:
+    cost: 18.0
+    latency: 56.37992731578188
+  node1: us-west-1
+  node2: eu-south-1
+- attributes:
+    cost: 14.0
+    latency: 22.12756984999428
+  node1: us-west-1
+  node2: us-east-1
+- attributes:
+    cost: 3.0
+    latency: 4.503086666500504
+  node1: us-west-1
+  node2: us-west-2
+- attributes:
+    cost: 14.0
+    latency: 52.74681312069741
+  node1: us-west-2
+  node2: eu-west-1
+- attributes:
+    cost: 13.0
+    latency: 50.419761736210916
+  node1: us-west-2
+  node2: eu-west-2
+- attributes:
+    cost: 15.0
+    latency: 52.66404737144228
+  node1: us-west-2
+  node2: eu-west-3
+- attributes:
+    cost: 13.0
+    latency: 53.90313239298122
+  node1: us-west-2
+  node2: eu-central-1
+- attributes:
+    cost: 25.0
+    latency: 59.17898549667339
+  node1: us-west-2
+  node2: eu-north-1
+- attributes:
+    cost: 17.0
+    latency: 56.63560185509145
+  node1: us-west-2
+  node2: eu-south-1
+- attributes:
+    cost: 13.0
+    latency: 22.383244389303854
+  node1: us-west-2
+  node2: us-east-1
+- attributes:
+    cost: 3.0
+    latency: 4.503086666500504
+  node1: us-west-2
+  node2: us-west-1
+nodes:
+- location:
+  - 53.3498
+  - -6.2603
+  name: eu-west-1
+- location:
+  - 51.5074
+  - -0.1278
+  name: eu-west-2
+- location:
+  - 48.8566
+  - 2.3522
+  name: eu-west-3
+- location:
+  - 50.1109
+  - 8.6821
+  name: eu-central-1
+- location:
+  - 59.3293
+  - 18.0686
+  name: eu-north-1
+- location:
+  - 45.4642
+  - 9.19
+  name: eu-south-1
+- location:
+  - 39.0481
+  - -77.4729
+  name: us-east-1
+- location:
+  - 37.7749
+  - -122.4194
+  name: us-west-1
+- location:
+  - 45.5231
+  - -122.6765
+  name: us-west-2
