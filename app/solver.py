@@ -87,7 +87,7 @@ def multicast_heuristic(network: nx.DiGraph, track: Track) -> SingleTrackSolutio
 
     # O(n) + O(n) * (O(n) + O(n)) + O(n) ≈ O(n) + O(n²) + O(n) ≈ O(n²)
     def augment(node: str):
-        nonlocal network, track, latencies, cost, tree
+        nonlocal network, latencies, cost, tree
 
         Replacement = namedtuple("Replacement", [
             "new_edge", "old_edge", "subtree", "delay_balance", "cost_balance"])

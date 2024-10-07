@@ -99,10 +99,12 @@ def generate_sample_traffic(type: str, peers: list[str]) -> dict[str, Track]:
 if __name__ == "__main__":
     parser = ArgumentParser(
         description="MoQ Relay Topology Optimization")
-    parser.add_argument("--network", default="small_topo.yaml", help="Network topology file")
+    parser.add_argument("--network", default="small_topo.yaml",
+                        help="Network topology file")
     parser.add_argument("--traffic-type",
                         choices=["live", "video-conference"], default="live", help="Type of traffic to generate")
-    parser.add_argument("--peers", nargs="+", default=[], help="Peers to generate traffic for")
+    parser.add_argument("--peers", nargs="+", default=[],
+                        help="Peers to generate traffic for")
     parser.add_argument("--use-cache",
                         action="store_true", default=False, help="Cache the results (using the input data as a key)")
     parser.add_argument("--single-track-optimizer",
@@ -112,17 +114,19 @@ if __name__ == "__main__":
                         choices=[opt.name for opt in MultiTrackOptimizerType], default=MultiTrackOptimizerType.ADAPTED.name, help="Multi track optimizer to use")
     parser.add_argument("--debug",
                         action="store_true", default=True, help="Debug mode")
-    parser.add_argument(
-        "--plotter", choices=[opt.name for opt in PlotterType], default=PlotterType.BASEMAP.name, help="Plotter to use")
+    parser.add_argument("--plotter", choices=[opt.name for opt in PlotterType],
+                        default=PlotterType.BASEMAP.name, help="Plotter to use")
     parser.add_argument("--plot-name", default="plot",
                         help="Name of the plot file (without extension)")
     args = parser.parse_args()
 
-    topology_filename = os.path.join("datasource", os.path.basename("small_topo.yaml"))
+    topology_filename = os.path.join(
+        "datasource", os.path.basename("small_topo.yaml"))
     network = load_network(topology_filename)
 
     seed(42)
-    peers = args.peers if len(args.peers) >= 2 else choose_peers(network, randint(5, len(network.nodes)))
+    peers = args.peers if len(args.peers) >= 2 else choose_peers(
+        network, randint(5, len(network.nodes)))
     tracks = generate_sample_traffic(args.traffic_type, peers)
 
     if args.debug:

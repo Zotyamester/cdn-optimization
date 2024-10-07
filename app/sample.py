@@ -1,3 +1,4 @@
+import sys
 from model import create_graph, display_triangle_inequality_satisfaction
 import networkx as nx
 import yaml
@@ -52,4 +53,5 @@ def store_network(network: nx.DiGraph, file_path: str):
 
 
 if __name__ == "__main__":
-    display_triangle_inequality_satisfaction(load_network("datasource/small_topo.yaml"))
+    display_triangle_inequality_satisfaction(load_network(
+        sys.argv[1] if len(sys.argv) > 1 else "datasource/small_topo.yaml"))
