@@ -1,7 +1,3 @@
-# origi, test, opti
-api: "opti"
-# ffmpeg, clock, gst
-mode: "gst"
 first_hop_relay:
     - relayid: "node1"
       track: "bbb-640x360-10"
