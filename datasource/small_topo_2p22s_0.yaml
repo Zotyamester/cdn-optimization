@@ -174,45 +174,45 @@ edges:
     attributes:
       latency: 0
       cost: 0.01
-    - node1: "walthamcross"
-      node2: "virginia"
-      attributes:
-        latency: 0
-        cost: 0.3
-        underlay_length: 2
-    - node1: "walthamcross"
-      node2: "lenoir"
-      attributes:
-        latency: 0
-        cost: 0.9
-        underlay_length: 3
-    - node1: "walthamcross"
-      node2: "ohio"
-      attributes:
-        latency: 0
-        cost: 0.9
-        underlay_length: 3
-    - node1: "walthamcross"
-      node2: "dublin"
-      attributes:
-        latency: 0
-        cost: 0.01
-        underlay_length: 1
-    - node1: "walthamcross"
-      node2: "middenmeer"
-      attributes:
-        latency: 0
-        cost: 0.01
-        underlay_length: 1
-    - node1: "walthamcross"
-      node2: "belgium"
-      attributes:
-        latency: 0
-        cost: 0.01
-        underlay_length: 1
-    - node1: "walthamcross"
-      node2: "eemshaven"
-      attributes:
-        latency: 0
-        cost: 0.01
-        underlay_length: 1
+  - node1: "walthamcross"
+    node2: "virginia"
+    attributes:
+      latency: 0
+      cost: 0.3
+      underlay_length: 2
+  - node1: "walthamcross"
+    node2: "lenoir"
+    attributes:
+      latency: 0
+      cost: 0.9
+      underlay_length: 3
+  - node1: "walthamcross"
+    node2: "ohio"
+    attributes:
+      latency: 0
+      cost: 0.9
+      underlay_length: 3
+  - node1: "walthamcross"
+    node2: "dublin"
+    attributes:
+      latency: 0
+      cost: 0.01
+      underlay_length: 1
+  - node1: "walthamcross"
+    node2: "middenmeer"
+    attributes:
+      latency: 0
+      cost: 0.01
+      underlay_length: 1
+  - node1: "walthamcross"
+    node2: "belgium"
+    attributes:
+      latency: 0
+      cost: 0.01
+      underlay_length: 1
+  - node1: "walthamcross"
+    node2: "eemshaven"
+    attributes:
+      latency: 0
+      cost: 0.01
+      underlay_length: 1
