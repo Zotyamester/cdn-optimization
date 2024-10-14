@@ -32,78 +32,79 @@ nodes:
       - 4.475403
 
 edges:
+ 
   - node1: "virginia"
     node2: "lenoir"
     attributes:
-      latency: 5
+      latency: 0
       cost: 0.01
   - node1: "virginia"
     node2: "ohio"
     attributes:
-      latency: 5
+      latency: 0
       cost: 0.01
   - node1: "lenoir"
     node2: "ohio"
     attributes:
-      latency: 5
+      latency: 0
       cost: 0.01
   - node1: "dublin"
     node2: "virginia"
     attributes:
-      latency: 30
+      latency: 0
       cost: 0.1
   - node1: "dublin"
     node2: "middenmeer"
     attributes:
-      latency: 5
+      latency: 0
       cost: 0.01
   - node1: "dublin"
     node2: "belgium"
     attributes:
-      latency: 5
+      latency: 0
       cost: 0.01
   - node1: "middenmeer"
     node2: "belgium"
     attributes:
-      latency: 5
+      latency: 0
       cost: 0.01
   - node1: "virginia"
     node2: "middenmeer"
     attributes:
-      latency: 60
+      latency: 0
       cost: 0.3
   - node1: "virginia"
     node2: "belgium"
     attributes:
-      latency: 65
+      latency: 0
       cost: 0.9
   - node1: "lenoir"
     node2: "dublin"
     attributes:
-      latency: 60
+      latency: 0
       cost: 0.3
   - node1: "lenoir"
     node2: "middenmeer"
     attributes:
-      latency: 65
+      latency: 0
       cost: 0.9
   - node1: "lenoir"
     node2: "belgium"
     attributes:
-      latency: 65
+      latency: 0
       cost: 0.9
   - node1: "ohio"
     node2: "dublin"
     attributes:
-      latency: 60
+      latency: 0
       cost: 0.3
   - node1: "ohio"
     node2: "middenmeer"
     attributes:
-      latency: 65
+      latency: 0
       cost: 0.9
   - node1: "ohio"
     node2: "belgium"
     attributes:
-      latency: 65
+      latency: 0
       cost: 0.9
