@@ -1,5 +1,5 @@
 from overlay_underlay import create_overlay_network, create_underlay_network, create_virtual_to_physical_mapping, load_base_network
-from model import display_triangle_inequality_satisfaction, load_geant_json
+from model import default_calculate_latency, display_triangle_inequality_satisfaction, load_geant_json
 from sample import store_network
 
 
@@ -70,4 +70,12 @@ if __name__ == "__main__":
     overlay_network = create_overlay_network(underlay_network, azure_nodes, mapping)
     network = overlay_network
     display_triangle_inequality_satisfaction(network)
+
+    answer = input("Re-calculate latency based solely on the overlay network? [y/N]: ")
+    if answer.lower() == "y":
+        for edge in network.edges:
+            node1, node2 = edge
+            network.edges[edge]["latency"] = default_calculate_latency(network, node1, node2)
+        display_triangle_inequality_satisfaction(network)
+
     store_network(network, "./datasource/azure_geant_topo.yaml")

@@ -61,7 +61,7 @@ def create_virtual_to_physical_mapping(underlay_network: nx.DiGraph, cdn_nodes: 
     for vir_node1, _ in cdn_nodes:
         # O((n + m) * log n)
         shortest_paths = nx.shortest_path(
-            underlay_network, vir_node1, weight="latency")
+            underlay_network, vir_node1, weight="cost")
 
         # O(n) * O(n)
         for vir_node2, _ in cdn_nodes:

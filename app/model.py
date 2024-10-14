@@ -71,9 +71,8 @@ def load_geant_json(graph_path: str,
             node1 = link["endpoint1_id"]
             node2 = link["endpoint2_id"]
 
-            REFERENCE_BANDWIDTH = 10e9  # 1 Gbps is a reasonable baseline for link capacity
-            capacity_in_gigabits = float(link["capacity"]) * 10e6  # the values are provided in Mbps, so we convert to Gbps
-            cost = capacity_in_gigabits / REFERENCE_BANDWIDTH  # make the cost proportional to capacity
+            local_link_cost, global_link_cost = 1, graph.number_of_nodes()
+            cost = global_link_cost if link["region"] == "global" else local_link_cost
 
             forward_edge = (node1, node2)
             graph.add_edge(
