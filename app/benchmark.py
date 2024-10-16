@@ -80,7 +80,6 @@ def benchmark(network, peers, min_peers, max_peers, step):
                         print(f"\tOptimization completed")
                     except TimeoutError:
                         to_be_skipped.add(single_track_optimizer_type)
-                        store_dnf_record(content_type, number_of_peers, single_track_optimizer_type, file)
                         print(f"\tOptimization timed out")
                     except Exception as e:
                         print(f"\tAnother error has occured: {e}")
@@ -91,16 +90,6 @@ def benchmark(network, peers, min_peers, max_peers, step):
 def store_header(file: IO):
     header = "content_type,number_of_peers,opt_type,runtime_in_ms,success,objective,avg_delay\n"
     file.write(header.encode("utf-8"))
-
-
-def store_dnf_record(content_type: ContentType,
-                     number_of_peers: int,
-                     opt_type: SingleTrackOptimizerType | MultiTrackOptimizerType,
-                     file: IO):
-    opt_name = OPTIMIZER_ABBREVIATIONS[opt_type]
-    record = (content_type.name, str(number_of_peers), opt_name, "DNF", "0", "-", "-")
-    record_line = ",".join(record) + "\n"
-    file.write(record_line.encode("utf-8"))
 
 
 def store_record(content_type: ContentType,
