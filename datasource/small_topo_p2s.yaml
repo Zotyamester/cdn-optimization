@@ -18,7 +18,7 @@ nodes:
       - -81.5247
   - name: "ohio"
     location:
-      - 40.367474
+      - 40.1367474
       - -82.996216
   - name: "dublin"
     location:
@@ -80,48 +80,48 @@ edges:
     node2: "middenmeer"
     attributes:
       latency: 60
-      cost: 0.3
+      cost: 0.13
       underlay_length: 2
   - node1: "virginia"
     node2: "belgium"
     attributes:
       latency: 60
-      cost: 0.3
+      cost: 0.13
       underlay_length: 2
   - node1: "lenoir"
     node2: "dublin"
     attributes:
       latency: 60
-      cost: 0.3
+      cost: 0.13
       underlay_length: 2
   - node1: "lenoir"
     node2: "middenmeer"
     attributes:
       latency: 65
-      cost: 0.9
+      cost: 0.15
       underlay_length: 3
   - node1: "lenoir"
     node2: "belgium"
     attributes:
       latency: 65
-      cost: 0.9
+      cost: 0.15
       underlay_length: 3
   - node1: "ohio"
     node2: "dublin"
     attributes:
       latency: 60
-      cost: 0.3
+      cost: 0.13
       underlay_length: 2
   - node1: "ohio"
     node2: "middenmeer"
     attributes:
       latency: 65
-      cost: 0.9
+      cost: 0.15
       underlay_length: 3
   - node1: "ohio"
     node2: "belgium"
     attributes:
       latency: 65
-      cost: 0.9
+      cost: 0.15
       underlay_length: 3
 
