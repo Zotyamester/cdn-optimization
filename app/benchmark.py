@@ -9,7 +9,7 @@ from traffic import choose_peers, generate_broadcast_traffic
 import signal
 
 
-MAXIMUM_RUNTIME_IN_SECONDS = 3600
+MAXIMUM_RUNTIME_IN_SECONDS = 2 * 3600  # 2 hours
 
 
 OPTIMIZER_ABBREVIATIONS = {
@@ -24,7 +24,7 @@ class ContentType(str, Enum):
     VIDEO = "video"
     AUDIO = "audio"
     MESSAGING = "text"
-    GAMING = "gaming"
+    # GAMING = "gaming"
 
 
 def generate_content(track_id, publisher, subscribers, content_type):
@@ -32,7 +32,7 @@ def generate_content(track_id, publisher, subscribers, content_type):
         ContentType.VIDEO: 400,
         ContentType.AUDIO: 150,
         ContentType.MESSAGING: 1000,
-        ContentType.GAMING: 50,
+        # ContentType.GAMING: 50,
     }
 
     tracks = generate_broadcast_traffic(
