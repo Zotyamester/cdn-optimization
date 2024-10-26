@@ -69,7 +69,7 @@ def multicast_heuristic(network: nx.DiGraph, track: Track) -> SingleTrackSolutio
     #  │           thus it reduces to O(n + n) ≈ O(n)
     #  └─ list comprehension's complexity
     def subtree_in_tree(node: str) -> list[str]:
-        return [v for _, v in nx.bfs_edges(tree, node)]
+        return nx.bfs_tree(tree, node).nodes
 
     # O(n) * O(1) ≈ O(n)
     def reverse_path_to_root(node: str) -> list[str]:
@@ -106,17 +106,17 @@ def multicast_heuristic(network: nx.DiGraph, track: Track) -> SingleTrackSolutio
             to_be_replaced_edge = (previous_node, tree_node)
             replacement_edge = (node, tree_node)
 
-            delay_balance = network.get_edge_data(
-                *replacement_edge)["latency"] - network.get_edge_data(*to_be_replaced_edge)["latency"]
-            cost_balance = network.get_edge_data(
-                *replacement_edge)["cost"] - network.get_edge_data(*to_be_replaced_edge)["cost"]
+            new_base_e2e_delay = latencies[node] + network.get_edge_data(*replacement_edge)["latency"]
+            old_base_e2e_delay = latencies[previous_node] + network.get_edge_data(*to_be_replaced_edge)["latency"]
+            delay_balance = new_base_e2e_delay - old_base_e2e_delay
+
+            cost_balance = network.get_edge_data(*replacement_edge)["cost"] - network.get_edge_data(*to_be_replaced_edge)["cost"]
 
             subtree = subtree_in_tree(tree_node)
 
             # If the delay budget is met by redirecting the traffic, and the replacement comes with cost reductions
-            if all(latencies[v] + delay_balance for v in subtree) and cost_balance < best_replacement.cost_balance:
-                best_replacement = Replacement(
-                    replacement_edge, to_be_replaced_edge, subtree, delay_balance, cost_balance)
+            if all(latencies[v] + delay_balance < track.delay_budget for v in subtree) and cost_balance < best_replacement.cost_balance:
+                best_replacement = Replacement(replacement_edge, to_be_replaced_edge, subtree, delay_balance, cost_balance)
 
         if best_replacement.cost_balance < 0 or (best_replacement.cost_balance == 0 and best_replacement.delay_balance < 0):
             tree.remove_edge(*best_replacement.old_edge)
@@ -160,7 +160,7 @@ def multicast_heuristic(network: nx.DiGraph, track: Track) -> SingleTrackSolutio
 
         # See if we can improve one of our existing connections by redirecting traffic through the newly added node
         augment(node)
-        
+
         return connection_node
 
     # O(n) * O(n²) ≈ O(n³)
@@ -170,7 +170,7 @@ def multicast_heuristic(network: nx.DiGraph, track: Track) -> SingleTrackSolutio
 
     # O(n)
     max_delay = max(latencies.values())
-    
+
     return SingleTrackSolution.found(cost, max_delay, list(tree.edges))
 
 
