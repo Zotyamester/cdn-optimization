@@ -1,6 +1,7 @@
 # CDN Optimization
 
 Experiments with Media over QUIC relay topology optimization.
+This project is strongly related to [1majom's moq-rs fork](https://github.com/1majom/moq-rs).
 
 ## Development 
 
