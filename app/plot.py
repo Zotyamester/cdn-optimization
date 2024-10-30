@@ -14,7 +14,7 @@ matplotlib.use("Agg")
 
 def get_plot_bytes() -> bytes:
     with io.BytesIO() as buffer:
-        plt.savefig(buffer, format='png', bbox_inches='tight', pad_inches=0.1)
+        plt.savefig(buffer, format="png", bbox_inches="tight", pad_inches=0.1)
         buffer.seek(0)
         image_bytes = buffer.getvalue()
         return image_bytes
@@ -112,6 +112,8 @@ def basemap_plot_network(network: nx.DiGraph,
 
     plt.axis("off")
     
+    plt.rcParams["svg.fonttype"] = "none"
+    plt.savefig("small_topo.svg", bbox_inches="tight", pad_inches=0.1)
     image_bytes = get_plot_bytes()
 
     plt.close()
