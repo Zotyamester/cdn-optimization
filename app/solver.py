@@ -10,18 +10,18 @@ from model import Track
 
 
 class SingleTrackSolution:
-    def __init__(self, success: bool, objective: float, avg_delay: float, used_links: list[tuple[str, str]]):
+    def __init__(self, success: bool, cost: float, max_delay: float, used_links: list[tuple[str, str]]):
         self.success = success
-        self.objective = objective
-        self.avg_delay = avg_delay
+        self.cost = cost
+        self.max_delay = max_delay
         self.used_links = used_links
 
     def __iter__(self):
-        yield from (self.success, self.objective, self.avg_delay, self.used_links)
+        yield from (self.success, self.cost, self.max_delay, self.used_links)
 
     @staticmethod
-    def found(objective: float, avg_delay: float, used_links: list[tuple[str, str]]) -> 'SingleTrackSolution':
-        return SingleTrackSolution(True, objective, avg_delay, used_links)
+    def found(cost: float, max_delay: float, used_links: list[tuple[str, str]]) -> 'SingleTrackSolution':
+        return SingleTrackSolution(True, cost, max_delay, used_links)
 
     @staticmethod
     def not_found() -> 'SingleTrackSolution':
@@ -31,25 +31,22 @@ class SingleTrackSolution:
 # Spectrum::LeftMost - Keeping the delay constraints
 def direct_link_tree(network: nx.Graph, track: Track) -> SingleTrackSolution:
     cost = 0.0
-    sum_delay = 0.0
+    max_delay = 0.0
     edges = []
 
     for subscriber in track.subscribers:
         edge = (track.publisher, subscriber)
 
         data = network.get_edge_data(*edge)
-        if data["latency"] > track.delay_budget:
-            return SingleTrackSolution.not_found()
-        sum_delay += data["latency"]
 
+        max_delay = max(max_delay, data["latency"])
+        if max_delay > track.delay_budget:
+            return SingleTrackSolution.not_found()
         cost += data["cost"]
         edges.append(edge)
 
-    # Since the path from the publisher to each subscriber is a link,
-    # the average end-to-end delay will be the same as the average link delay
-    avg_delay = sum_delay / len(track.subscribers)
 
-    return SingleTrackSolution.found(cost, avg_delay, edges)
+    return SingleTrackSolution.found(cost, max_delay, edges)
 
 
 # Spectrum::Left - Approximately optimal in cost while keeping the delay constraints
@@ -72,7 +69,7 @@ def multicast_heuristic(network: nx.DiGraph, track: Track) -> SingleTrackSolutio
     #  │           thus it reduces to O(n + n) ≈ O(n)
     #  └─ list comprehension's complexity
     def subtree_in_tree(node: str) -> list[str]:
-        return [v for _, v in nx.bfs_edges(tree, node)]
+        return nx.bfs_tree(tree, node).nodes
 
     # O(n) * O(1) ≈ O(n)
     def reverse_path_to_root(node: str) -> list[str]:
@@ -109,17 +106,17 @@ def multicast_heuristic(network: nx.DiGraph, track: Track) -> SingleTrackSolutio
             to_be_replaced_edge = (previous_node, tree_node)
             replacement_edge = (node, tree_node)
 
-            delay_balance = network.get_edge_data(
-                *replacement_edge)["latency"] - network.get_edge_data(*to_be_replaced_edge)["latency"]
-            cost_balance = network.get_edge_data(
-                *replacement_edge)["cost"] - network.get_edge_data(*to_be_replaced_edge)["cost"]
+            new_base_e2e_delay = latencies[node] + network.get_edge_data(*replacement_edge)["latency"]
+            old_base_e2e_delay = latencies[previous_node] + network.get_edge_data(*to_be_replaced_edge)["latency"]
+            delay_balance = new_base_e2e_delay - old_base_e2e_delay
+
+            cost_balance = network.get_edge_data(*replacement_edge)["cost"] - network.get_edge_data(*to_be_replaced_edge)["cost"]
 
             subtree = subtree_in_tree(tree_node)
 
             # If the delay budget is met by redirecting the traffic, and the replacement comes with cost reductions
-            if all(latencies[v] + delay_balance for v in subtree) and cost_balance < best_replacement.cost_balance:
-                best_replacement = Replacement(
-                    replacement_edge, to_be_replaced_edge, subtree, delay_balance, cost_balance)
+            if all(latencies[v] + delay_balance < track.delay_budget for v in subtree) and cost_balance < best_replacement.cost_balance:
+                best_replacement = Replacement(replacement_edge, to_be_replaced_edge, subtree, delay_balance, cost_balance)
 
         if best_replacement.cost_balance < 0 or (best_replacement.cost_balance == 0 and best_replacement.delay_balance < 0):
             tree.remove_edge(*best_replacement.old_edge)
@@ -138,14 +135,13 @@ def multicast_heuristic(network: nx.DiGraph, track: Track) -> SingleTrackSolutio
                 lambda edge, node=node:
                     edge[0] in tree.nodes and
                     edge[1] == node and
-                    latencies[edge[0]] +
-                    network.get_edge_data(
-                        *edge
-                    )["latency"] <= track.delay_budget,
+                    latencies[edge[0]] + network.get_edge_data(*edge)["latency"] <= track.delay_budget,
                 network.edges
             ),
-            key=lambda edge: (network.get_edge_data(
-                *edge)["cost"], network.get_edge_data(*edge)["latency"]),
+            key=lambda edge: (
+                network.get_edge_data(*edge)["cost"],
+                latencies[edge[0]] + network.get_edge_data(*edge)["latency"]
+            ),
             default=None
         )
 
@@ -153,17 +149,18 @@ def multicast_heuristic(network: nx.DiGraph, track: Track) -> SingleTrackSolutio
         if best_edge is None:
             return None
 
-        # Add the edge to the tree and update the cost and latencies
+        # Add the edge to the tree
         connection_node = best_edge[0]
-        best_cost, best_latency = network.get_edge_data(
-            *best_edge)["cost"], network.get_edge_data(*best_edge)["latency"]
         tree.add_edge(*best_edge)
-        cost += best_cost
-        latencies[node] = latencies[connection_node] + best_latency
+
+        # Update the cost and latency values
+        best_data = network.get_edge_data(*best_edge)
+        cost += best_data["cost"]
+        latencies[node] = latencies[connection_node] + best_data["latency"]
 
         # See if we can improve one of our existing connections by redirecting traffic through the newly added node
         augment(node)
-        
+
         return connection_node
 
     # O(n) * O(n²) ≈ O(n³)
@@ -172,9 +169,9 @@ def multicast_heuristic(network: nx.DiGraph, track: Track) -> SingleTrackSolutio
             return SingleTrackSolution.not_found()
 
     # O(n)
-    avg_delay = sum(latencies.values()) / (len(latencies.values()) - 1)  # Excluding the publisher
-    
-    return SingleTrackSolution.found(cost, avg_delay, list(tree.edges))
+    max_delay = max(latencies.values())
+
+    return SingleTrackSolution.found(cost, max_delay, list(tree.edges))
 
 
 # Spectrum::Right - Optimal in cost while keeping the delay constraints
@@ -223,7 +220,7 @@ def get_optimal_topology_for_a_single_track(network: nx.DiGraph, track: Track) -
             prob += selected_links[stream][link] * M >= transmission_bitrates[stream][link], \
                 f"z_{stream}_({link[0]},{link[1]})*M>=x_{stream}_({link[0]},{link[1]})"
 
-    # Constraint: sum(zfij * dij) <= Df
+    # Constraint: sum(zfij * dij) <= D
     for stream in track.streams.keys():
         prob += lp.lpSum([selected_links[stream][(node1, node2)] * data["latency"]
                           for node1, node2, data in network.edges(data=True)]) <= track.delay_budget, \
@@ -235,11 +232,11 @@ def get_optimal_topology_for_a_single_track(network: nx.DiGraph, track: Track) -
     if not success:
         return SingleTrackSolution.not_found()
 
-    objective = prob.objective.value()
+    cost = prob.objective.value()
+    max_delay = max(track.delay_budget + prob.constraints[f"delay_budget_for_{stream}"].value() for stream in track.streams.keys())
     used_links = [link for link, var in link_usages.items()
                   if var.varValue > 0]
-    avg_delay = sum(track.delay_budget + prob.constraints[f"delay_budget_for_{stream}"].value() for stream in track.streams.keys()) / len(track.streams.keys())
-    return SingleTrackSolution.found(objective, avg_delay, used_links)
+    return SingleTrackSolution.found(cost, max_delay, used_links)
 
 
 # Spectrum::RightMost - Optimal in cost
@@ -252,6 +249,7 @@ def minimum_spanning_tree(network: nx.DiGraph, track: Track) -> SingleTrackSolut
     mst_from_publisher = nx.bfs_tree(mst, track.publisher)
 
     cost = 0.0
+    max_delay = 0.0
     latencies = {track.publisher: 0.0}
     for u, v in mst_from_publisher.edges:
         data = network.get_edge_data(u, v)
@@ -259,12 +257,11 @@ def minimum_spanning_tree(network: nx.DiGraph, track: Track) -> SingleTrackSolut
         cost += data["cost"]
         latencies[v] = latencies[u] + data["latency"]
 
-        if latencies[v] > track.delay_budget:
+        max_delay = max(max_delay, latencies[v])
+        if max_delay > track.delay_budget:
             return SingleTrackSolution.not_found()
 
-    avg_delay = sum(latencies.values()) / (len(latencies.values()) - 1)  # Excluding the publisher
-
-    return SingleTrackSolution.found(cost, avg_delay, list(mst_from_publisher.edges))
+    return SingleTrackSolution.found(cost, max_delay, list(mst_from_publisher.edges))
 
 
 class SingleTrackOptimizerType(str, Enum):
@@ -297,20 +294,17 @@ class MultiTrackSolution:
         return self.explicit_success and all(solution.success for solution in self.solutions.values())
 
     @property
-    def objective(self) -> float:
+    def cost(self) -> float:
         if not self.explicit_success:
             return 0.0
-        return sum(solution.objective for solution in self.solutions.values())
+        return sum(solution.cost for solution in self.solutions.values())
     
     @property
-    def avg_delay(self) -> float:
+    def max_delay(self) -> float:
         if not self.explicit_success:
             return 0.0
-        
-        # Note: This is not the average delay of the network, but the average delay of the tracks
-        avg_delay = sum(solution.avg_delay for solution in self.solutions.values()) / len(self.solutions.values())
-
-        return avg_delay
+        max_delay = max(solution.max_delay for solution in self.solutions.values())
+        return max_delay
 
     @property
     def used_links_per_track(self) -> dict[str, list[tuple[str, str]]]:
@@ -319,7 +313,7 @@ class MultiTrackSolution:
         return {track_id: solution.used_links for track_id, solution in self.solutions.items()}
 
     def __iter__(self):
-        yield from (self.success, self.objective, self.avg_delay, self.used_links_per_track)
+        yield from (self.success, self.cost, self.max_delay, self.used_links_per_track)
 
     @staticmethod
     def found(solutions: dict[str, SingleTrackSolution]) -> 'MultiTrackSolution':
@@ -382,7 +376,7 @@ def get_optimal_topology_for_multiple_tracks(network: nx.DiGraph, tracks: dict[s
                 prob += selected_links[track_id][stream][link] * M >= transmission_bitrates[track_id][stream][link], \
                     f"z_{track_id}_{stream}_({link[0]},{link[1]})*M>=x_{track_id}_{stream}_({link[0]},{link[1]})"
 
-    # Constraint: sum(zftij * dij) <= Dft
+    # Constraint: sum(zftij * dij) <= Dt
     for track_id, track in tracks.items():
         for stream in track.streams.keys():
             prob += lp.lpSum([selected_links[track_id][stream][(node1, node2)] * data["latency"]
@@ -400,13 +394,13 @@ def get_optimal_topology_for_multiple_tracks(network: nx.DiGraph, tracks: dict[s
         used_links = [link for link, var in link_usages[track_id].items() if var.varValue > 0]
         
         objective = 0.0
-
         for link in used_links:
             objective += network.get_edge_data(*link)["cost"]
 
-        avg_delay = sum(track.delay_budget + prob.constraints[f"delay_budget_for_{track_id}_{stream}"].value() for stream in track.streams.keys()) / len(track.streams.keys())
+        max_delay = max(track.delay_budget + prob.constraints[f"delay_budget_for_{track_id}_{stream}"].value() for stream in track.streams.keys())
 
-        solutions[track_id] = SingleTrackSolution.found(objective, avg_delay, used_links)
+        solutions[track_id] = SingleTrackSolution.found(objective, max_delay, used_links)
+
     return MultiTrackSolution.found(solutions)
 
 

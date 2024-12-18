@@ -9,7 +9,7 @@ from traffic import choose_peers, generate_broadcast_traffic
 import signal
 
 
-MAXIMUM_RUNTIME_IN_SECONDS = 3600
+MAXIMUM_RUNTIME_IN_SECONDS = 2 * 3600  # 2 hours
 
 
 OPTIMIZER_ABBREVIATIONS = {
@@ -23,17 +23,17 @@ OPTIMIZER_ABBREVIATIONS = {
 class ContentType(str, Enum):
     VIDEO = "video"
     AUDIO = "audio"
-    MESSAGING = "text"
+    # MESSAGING = "text"
     GAMING = "gaming"
 
+LATENCIES = {
+    ContentType.VIDEO: 400,
+    ContentType.AUDIO: 150,
+    # ContentType.MESSAGING: 1000,
+    ContentType.GAMING: 75,
+}
 
 def generate_content(track_id, publisher, subscribers, content_type):
-    LATENCIES = {
-        ContentType.VIDEO: 400,
-        ContentType.AUDIO: 150,
-        ContentType.MESSAGING: 1000,
-        ContentType.GAMING: 50,
-    }
 
     tracks = generate_broadcast_traffic(
         track_id, publisher, subscribers, LATENCIES[content_type])
@@ -88,7 +88,7 @@ def benchmark(network, peers, min_peers, max_peers, step):
 
 
 def store_header(file: IO):
-    header = "content_type,number_of_peers,opt_type,runtime_in_ms,success,objective,avg_delay\n"
+    header = "content_type,number_of_peers,opt_type,runtime_in_ms,success,objective,max_delay\n"
     file.write(header.encode("utf-8"))
 
 
@@ -99,7 +99,10 @@ def store_record(content_type: ContentType,
                  solution: MultiTrackSolution,
                  file: IO):
     opt_name = OPTIMIZER_ABBREVIATIONS[opt_type]
-    record = (content_type.name, str(number_of_peers), opt_name, f"{runtime_in_ms:.4f}", "1" if solution.success else "0", f"{solution.objective:.4f}", f"{solution.avg_delay:.4f}")
+    success = "1" if solution.success else "0"
+    cost = solution.cost
+    max_delay = solution.max_delay if solution.success else LATENCIES[content_type]
+    record = (content_type.name, str(number_of_peers), opt_name, f"{runtime_in_ms:.4f}", success, f"{cost:.4f}", f"{max_delay:.4f}")
     record_line = ",".join(record) + "\n"
     file.write(record_line.encode("utf-8"))
 
@@ -116,9 +119,9 @@ def collect_optimization_info(network, tracks, multi_track_optimizer):
 
 if __name__ == "__main__":
     network = load_network("./datasource/azure_geant_topo.yaml")
-    peers = choose_peers(network, network.number_of_nodes())
+    peers = choose_peers(network, network.number_of_nodes(), seed=42)
 
-    n = os.cpu_count()
+    n = os.cpu_count()//4
 
     pids = []
     

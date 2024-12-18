@@ -89,7 +89,7 @@ def generate_sample_traffic(type: str, peers: list[str]) -> dict[str, Track]:
     if type == "live":
         track_id = "live"
         publisher, *subscribers = peers
-        return generate_broadcast_traffic(track_id, publisher, subscribers, 50)
+        return generate_broadcast_traffic(track_id, publisher, subscribers, 150)
     elif type == "video-conference":
         return generate_full_mesh_traffic(peers, 200)
     else:
@@ -103,12 +103,12 @@ if __name__ == "__main__":
                         help="Network topology file")
     parser.add_argument("--traffic-type",
                         choices=["live", "video-conference"], default="live", help="Type of traffic to generate")
-    parser.add_argument("--peers", nargs="+", default=[],
+    parser.add_argument("--peers", nargs="+", default=["virginia", "lenoir", "ohio", "dublin", "middenmeer", "belgium"],
                         help="Peers to generate traffic for")
     parser.add_argument("--use-cache",
                         action="store_true", default=False, help="Cache the results (using the input data as a key)")
     parser.add_argument("--single-track-optimizer",
-                        choices=[opt.name for opt in SingleTrackOptimizerType], default=SingleTrackOptimizerType.INTEGER_LINEAR_PROGRAMMING.name,
+                        choices=[opt.name for opt in SingleTrackOptimizerType], default=SingleTrackOptimizerType.MULTICAST_HEURISTIC.name,
                         help="Single track optimizer to use (ignored if multi-track optimizer is not set to ADAPTED)")
     parser.add_argument("--multi-track-optimizer",
                         choices=[opt.name for opt in MultiTrackOptimizerType], default=MultiTrackOptimizerType.ADAPTED.name, help="Multi track optimizer to use")
