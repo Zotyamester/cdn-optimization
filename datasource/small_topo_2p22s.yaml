@@ -94,67 +94,67 @@ edges:
   - node1: "virginia"
     node2: "middenmeer"
     attributes:
-      latency: 60
+      latency: 35
       cost: 0.3
       underlay_length: 2
   - node1: "virginia"
     node2: "belgium"
     attributes:
-      latency: 65
+      latency: 40
       cost: 0.9
       underlay_length: 2
   - node1: "lenoir"
     node2: "dublin"
     attributes:
-      latency: 60
+      latency: 35
       cost: 0.3
       underlay_length: 2
   - node1: "lenoir"
     node2: "middenmeer"
     attributes:
-      latency: 65
+      latency: 40
       cost: 0.9
       underlay_length: 3
   - node1: "lenoir"
     node2: "belgium"
     attributes:
-      latency: 65
+      latency: 40
       cost: 0.9
       underlay_length: 3
   - node1: "ohio"
     node2: "dublin"
     attributes:
-      latency: 60
+      latency: 35
       cost: 0.3
       underlay_length: 2
   - node1: "ohio"
     node2: "middenmeer"
     attributes:
-      latency: 65
+      latency: 40
       cost: 0.9
       underlay_length: 3
   - node1: "ohio"
     node2: "belgium"
     attributes:
-      latency: 65
+      latency: 40
       cost: 0.9
       underlay_length: 3
   - node1: "eemshaven"
     node2: "virginia"
     attributes:
-      latency: 60
+      latency: 35
       cost: 0.3
       underlay_length: 2
   - node1: "eemshaven"
     node2: "lenoir"
     attributes:
-      latency: 65
+      latency: 40
       cost: 0.9
       underlay_length: 3
   - node1: "eemshaven"
     node2: "ohio"
     attributes:
-      latency: 65
+      latency: 40
       cost: 0.9
       underlay_length: 3
   - node1: "eemshaven"
@@ -177,19 +177,19 @@ edges:
   - node1: "walthamcross"
     node2: "virginia"
     attributes:
-      latency: 60
+      latency: 35
       cost: 0.3
       underlay_length: 2
   - node1: "walthamcross"
     node2: "lenoir"
     attributes:
-      latency: 65
+      latency: 40
       cost: 0.9
       underlay_length: 3
   - node1: "walthamcross"
     node2: "ohio"
     attributes:
-      latency: 65
+      latency: 40
       cost: 0.9
       underlay_length: 3
   - node1: "walthamcross"

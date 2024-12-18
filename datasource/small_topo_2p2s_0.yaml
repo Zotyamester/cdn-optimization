@@ -57,7 +57,7 @@ edges:
   - node1: "dublin"
     node2: "virginia"
     attributes:
-      latency: 0
+      latency: 30
       cost: 0.1
       underlay_length: 1
   - node1: "dublin"
@@ -82,47 +82,47 @@ edges:
     node2: "middenmeer"
     attributes:
       latency: 0
-      cost: 0.3
+      cost: 0.11
       underlay_length: 2
   - node1: "virginia"
     node2: "belgium"
     attributes:
       latency: 0
-      cost: 0.9
+      cost: 0.11
       underlay_length: 2
   - node1: "lenoir"
     node2: "dublin"
     attributes:
       latency: 0
-      cost: 0.3
+      cost: 0.11
       underlay_length: 2
   - node1: "lenoir"
     node2: "middenmeer"
     attributes:
       latency: 0
-      cost: 0.9
-      underlay_length: 2
+      cost: 0.12
+      underlay_length: 3
   - node1: "lenoir"
     node2: "belgium"
     attributes:
       latency: 0
-      cost: 0.9
+      cost: 0.12
       underlay_length: 3
   - node1: "ohio"
     node2: "dublin"
     attributes:
       latency: 0
-      cost: 0.3
-      underlay_length: 3
+      cost: 0.11
+      underlay_length: 2
   - node1: "ohio"
     node2: "middenmeer"
     attributes:
       latency: 0
-      cost: 0.9
+      cost: 0.12
       underlay_length: 3
   - node1: "ohio"
     node2: "belgium"
     attributes:
       latency: 0
-      cost: 0.9
+      cost: 0.12
       underlay_length: 3
